@@ -5,10 +5,11 @@ pkgs.mkShell {
   packages = [
     pkgs.clang_18
     pkgs.llvm_18
+    pkgs.lld_18
     pkgs.ccache
   ];
   shellHook = ''
-    export PATH=${pkgs.ccache}/bin:${pkgs.llvm_18}/bin:$PATH;
+    export PATH=${pkgs.ccache}/bin:${pkgs.clang_18}/bin:${pkgs.llvm_18}/bin:$PATH;
     export AR=llvm-ar;
     export RANLIB=llvm-ranlib;
     export AS=llvm-as;

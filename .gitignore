@@ -3,3 +3,5 @@ cpython
 cpython-bin
 output_dir
 seeds_dir
+afl-allow-list.txt
+.vscode

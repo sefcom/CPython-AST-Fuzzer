@@ -1,0 +1,1 @@
+find $(cd .; pwd)/cpython/Modules -name "*.c" > ./afl-allow-list.txt

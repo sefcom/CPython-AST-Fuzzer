@@ -67,6 +67,9 @@ Definitions for "language features" and examples:
   - structure declaration: `def`, `class`, `lambda`
 - TBD
 
+### AST or CST(concrete syntax tree)?
+AST, because we don't need that many information in CST, like whitespace or etc.
+
 ## Mutation methods
 - CST(concrete syntax tree) mutators
   - add life-time declaration into variables
@@ -142,8 +145,10 @@ technic required:
 - calling of member function `dict.items()`
 - equal operator
 
-### PHP
+<!--
+### PHP and other
 TODO
+-->
 
 ## Previous works
 ### PyRTFuzz
@@ -153,7 +158,6 @@ title: PyRTFuzz: Detecting Bugs in Python Runtimes via Two-Level Collaborative F
 - built on [Google atheris](https://github.com/google/atheris) and `libFuzzer`
 - limitations:
   - limited language features used, only used `function`, `class`, `import`, `statement`, `global` and workflow control. Since it cannot overload functions, there is no way for it to find the UAFs listed as my motivation samples.
-  - minor: python versions too old?
 
 ### Gramatron
 title: Gramatron: Effective Grammar-Aware Fuzzing ISSTA'21  
@@ -164,10 +168,11 @@ title: Gramatron: Effective Grammar-Aware Fuzzing ISSTA'21
 - TODO
 
 ## Evaluations
-Coverage
+Coverage?
+There are some disadvantages for using coverage because we may more interested on some special combinations of builtin modules and syntax which will not contribute to the coverage.
 
 ## Limitations
-- no multi-threads or concurrency? It maybe possible to do that but I'm not sure.
+- no multi-threads or concurrency
 
 ## references
 Comby - general languages AST parser  
@@ -179,6 +184,3 @@ Comby - general languages AST parser
 
 [Python3 syntax grammar](https://docs.python.org/3/reference/grammar.html)  
 [PHP syntax grammar](https://github.com/php/php-langspec/blob/master/spec/19-grammar.md)
-
-## TODOs
-- [] CST - concrete syntax tree for mutators
