@@ -7,7 +7,7 @@ cd $WORK_DIR
 CPYTHON_VERSION=3.12
 CPYTHON_PATH=$(readlink -f ./cpython)
 CPYTHON_BIN=$(readlink -f ./cpython-bin)
-AFLPP_VER=stable
+AFLPP_VER=dev
 AFLPP_PATH=$(readlink -f ./AFLplusplus)
 ENTRY_PATH=$(readlink -f ./fuzzer-entry)
 USING_CORE=7
@@ -81,11 +81,14 @@ else
     
     echo -e "${GREEN}[INFO] configuring CPython$NC"
     # nix-shell --pure --command "autoreconf -fi" $WORK_DIR/cpython.nix
-    nix-shell --pure --command "./configure CC='$AFLPP_PATH/afl-clang-lto' CXX='$AFLPP_PATH/afl-clang-lto++' --prefix=$CPYTHON_BIN --disable-shared --enable-optimizations" $WORK_DIR/cpython.nix
+    nix-shell --pure --command "./configure CC='$AFLPP_PATH/afl-clang-lto' CXX='$AFLPP_PATH/afl-clang-lto++' --prefix=$CPYTHON_BIN --disable-shared" $WORK_DIR/cpython.nix
+    
     echo -e "${GREEN}[INFO] patching CPython$NC"
     nix-shell --pure --command "$AFLPP_PATH/afl-clang-lto -I$CPYTHON_PATH -I$CPYTHON_PATH/Include -I$CPYTHON_PATH/Include/internal -c $WORK_DIR/src/entry.c -o $CPYTHON_PATH/entry.o" $WORK_DIR/cpython.nix
-    # must being insert after pythonrun
     sed -i 's/Python\/perf_trampoline.o \\/Python\/perf_trampoline.o entry.o\\/g' $CPYTHON_PATH/Makefile
+    if [ "$(tail $CPYTHON_PATH/Python/pythonrun.c -n 1)" = "#endif" ]; then
+        echo "PyObject *(*run_mod_fuzzer)(mod_ty, PyObject *, PyObject *, PyObject *,PyCompilerFlags *, PyArena *) = run_mod;" >> $CPYTHON_PATH/Python/pythonrun.c
+    fi
     
     echo -e "${GREEN}[INFO] building CPython$NC"
     nix-shell --pure --command "AFL_LLVM_ALLOWLIST='$WORK_DIR/afl-allow-list.txt' make -s altinstall -j$USING_CORE" $WORK_DIR/cpython.nix

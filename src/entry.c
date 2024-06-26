@@ -6,7 +6,8 @@
 #include "pycore_global_objects.h"
 #include "pycore_global_strings.h"
 
-static PyObject *run_mod(mod_ty, PyObject *, PyObject *, PyObject *,
+// patched in ./cpython/Python/pythonrun.c for AST execution
+extern PyObject *(*run_mod_fuzzer)(mod_ty, PyObject *, PyObject *, PyObject *,
                           PyCompilerFlags *, PyArena *);
 
 // from pythonrun.c
@@ -23,7 +24,7 @@ int fuzzer_entry(mod_ty mod){
     }
     PyObject *d = PyModule_GetDict(m);
     PyCompilerFlags *flags = &_PyCompilerFlags_INIT;
-    PyObject *re = run_mod(mod, PyUnicode_FromString("test.py"), d, d, flags, arena);
+    PyObject *re = run_mod_fuzzer(mod, PyUnicode_FromString("test.py"), d, d, flags, arena);
     _PyArena_Free(arena);
     if(re != NULL){
         Py_DECREF(re);
