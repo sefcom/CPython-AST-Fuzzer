@@ -65,7 +65,7 @@ else
     nix-shell --pure --command "make -s clean" $WORK_DIR/aflpp.nix
     echo -e "$GREEN [INFO] building AFLplusplus $NC"
     # make -s -C $AFLPP_PATH distrib
-    nix-shell --pure --command "make -s source-only -j$USING_CORE" $WORK_DIR/aflpp.nix
+    nix-shell --pure --command "CC='ccache clang' CXX='ccache clang++' make -s source-only -j$USING_CORE" $WORK_DIR/aflpp.nix
     cd $WORK_DIR
 fi
 
@@ -81,7 +81,7 @@ else
     
     echo -e "${GREEN}[INFO] configuring CPython$NC"
     # nix-shell --pure --command "autoreconf -fi" $WORK_DIR/cpython.nix
-    nix-shell --pure --command "./configure CC='$AFLPP_PATH/afl-clang-lto' CXX='$AFLPP_PATH/afl-clang-lto++' --prefix=$CPYTHON_BIN --disable-shared" $WORK_DIR/cpython.nix
+    nix-shell --pure --command "./configure CC='ccache $AFLPP_PATH/afl-clang-lto' CXX='ccache $AFLPP_PATH/afl-clang-lto++' --prefix=$CPYTHON_BIN --disable-shared" $WORK_DIR/cpython.nix
     
     echo -e "${GREEN}[INFO] patching CPython$NC"
     nix-shell --pure --command "$AFLPP_PATH/afl-clang-lto -I$CPYTHON_PATH -I$CPYTHON_PATH/Include -I$CPYTHON_PATH/Include/internal -c $WORK_DIR/src/entry.c -o $CPYTHON_PATH/entry.o" $WORK_DIR/cpython.nix
@@ -89,6 +89,7 @@ else
     if [ "$(tail $CPYTHON_PATH/Python/pythonrun.c -n 1)" = "#endif" ]; then
         echo "PyObject *(*run_mod_fuzzer)(mod_ty, PyObject *, PyObject *, PyObject *,PyCompilerFlags *, PyArena *) = run_mod;" >> $CPYTHON_PATH/Python/pythonrun.c
     fi
+    $WORK_DIR/get-allow-list.sh $CPYTHON_PATH
     
     echo -e "${GREEN}[INFO] building CPython$NC"
     nix-shell --pure --command "AFL_LLVM_ALLOWLIST='$WORK_DIR/afl-allow-list.txt' make -s altinstall -j$USING_CORE" $WORK_DIR/cpython.nix

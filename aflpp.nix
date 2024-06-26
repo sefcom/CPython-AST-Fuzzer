@@ -12,7 +12,7 @@ pkgs.mkShell {
   ];
   shellHook = ''
     export LLVM_CONFIG=llvm-config;
-    export PATH=${pkgs.lld_18}/bin:${pkgs.ccache}/bin:${pkgs.llvm_18}/bin:$PATH;
+    export PATH=${pkgs.lld_18}/bin:${pkgs.ccache}/bin:${pkgs.llvm_18}/bin:${pkgs.clang_18}/bin:$PATH;
     export LIBRARY_PATH=${pkgs.gmp}/lib:${pkgs.capstone_4}/lib:$LIBRARY_PATH;
   '';
 }
