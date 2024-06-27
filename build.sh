@@ -6,7 +6,6 @@ cd $WORK_DIR
 
 CPYTHON_VERSION=3.12
 CPYTHON_PATH=$(readlink -f ./cpython)
-CPYTHON_BIN=$(readlink -f ./cpython-bin)
 AFLPP_VER=dev
 AFLPP_PATH=$(readlink -f ./AFLplusplus)
 ENTRY_PATH=$(readlink -f ./fuzzer-entry)
@@ -72,7 +71,6 @@ fi
 if [ $SKIP_CPYTHON -eq 1 ]; then
     echo -e "[INFO] skip building CPython"
 else
-    rm -rf $CPYTHON_BIN
     cd $CPYTHON_PATH
     if [ -f "Makefile" ]; then
         echo "$GREEN[INFO] cleaning CPython$NC"
@@ -84,14 +82,17 @@ else
     nix-shell --pure --command "./configure CC='ccache $AFLPP_PATH/afl-clang-lto' CXX='ccache $AFLPP_PATH/afl-clang-lto++' --prefix=$CPYTHON_BIN --disable-shared" $WORK_DIR/cpython.nix
     
     echo -e "${GREEN}[INFO] patching CPython$NC"
-    nix-shell --pure --command "$AFLPP_PATH/afl-clang-lto -I$CPYTHON_PATH -I$CPYTHON_PATH/Include -I$CPYTHON_PATH/Include/internal -c $WORK_DIR/src/entry.c -o $CPYTHON_PATH/entry.o" $WORK_DIR/cpython.nix
-    sed -i 's/Python\/perf_trampoline.o \\/Python\/perf_trampoline.o entry.o\\/g' $CPYTHON_PATH/Makefile
+    cp $WORK_DIR/src/entry.c $CPYTHON_PATH/Programs/python.c
     if [ "$(tail $CPYTHON_PATH/Python/pythonrun.c -n 1)" = "#endif" ]; then
         echo "PyObject *(*run_mod_fuzzer)(mod_ty, PyObject *, PyObject *, PyObject *,PyCompilerFlags *, PyArena *) = run_mod;" >> $CPYTHON_PATH/Python/pythonrun.c
     fi
     $WORK_DIR/get-allow-list.sh $CPYTHON_PATH
+    echo -n "$CPYTHON_PATH/Programs/python.c" >> $WORK_DIR/afl-allow-list.txt
     
     echo -e "${GREEN}[INFO] building CPython$NC"
-    nix-shell --pure --command "AFL_LLVM_ALLOWLIST='$WORK_DIR/afl-allow-list.txt' make -s altinstall -j$USING_CORE" $WORK_DIR/cpython.nix
+    nix-shell --pure --command "AFL_LLVM_ALLOWLIST='$WORK_DIR/afl-allow-list.txt' make -s -j$USING_CORE build" $WORK_DIR/cpython.nix
     cd $WORK_DIR
 fi
+
+# python-config --version == $CPYTHON_VERSION
+gcc $WORK_DIR/src/mutators/*.c -I$AFLPP_PATH/include $(python-config --includes) $(python-config --includes)/internal $(python-config --ldflags --embed) -o ./fuzzer.so --shared

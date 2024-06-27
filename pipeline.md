@@ -28,23 +28,18 @@ We believe that there are many and comprehensive unit tests for every individual
                                 |
                                 |
                                 \/
-                grammar based mutations --------> arguments text based mutations
-                                |                                  |
-                                |                                  |
-                                |-----------------------------------
+                AST based mutations --------> arguments based mutations
+                                |                           |
+                                |                           |
+                                |----------------------------
                                 |
                                 \/
-                whole source code payload text based mutation(~50% pass) to create edge cases
-                                |
-                                |
-                                |
-                                \/
-                conventional(converge guided) fuzzer, e.g. AFL++, w/ ASAN enabled
+                        AFL++ w/ persistent mode under LTO, and ASAN enabled
                                 |
                                 |
                                 |
                                 \/
-                        interpreter
+                        `run_mod` run python AST directly
 
 </pre>
 ## Terminology
