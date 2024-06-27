@@ -41,7 +41,7 @@ expr_ty new_func(my_mutator_t *data, const char *name)
     assert(data);
     expr_ty func = new_expr(data);
     func->kind = Name_kind;
-    func->v.Name.id = PyUnicode_FromString(name);
+    add_python_obj_str(data, (size_t)&(func->v.Name.id) - (size_t)data->ast_buf, name);
     func->v.Name.ctx = Load;
     return func;
 }

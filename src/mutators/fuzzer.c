@@ -24,7 +24,6 @@
  */
 my_mutator_t *afl_custom_init(afl_state_t *afl, unsigned int seed)
 {
-    Py_Initialize();
     srand(seed); // needed also by surgical_havoc_mutate()
 
     my_mutator_t *data = calloc(1, sizeof(my_mutator_t));
@@ -36,7 +35,6 @@ my_mutator_t *afl_custom_init(afl_state_t *afl, unsigned int seed)
     }
 
     data->ast_buf_size = 0x500;
-    data->ast_buf_used = 0;
 
     if ((data->ast_buf = calloc(1, data->ast_buf_size)) == NULL)
     {
@@ -62,7 +60,7 @@ my_mutator_t *afl_custom_init(afl_state_t *afl, unsigned int seed)
     asdl_expr_seq *args = new_args(data, 1);
     expr_ty arg = new_expr(data);
     arg->kind = Constant_kind;
-    arg->v.Constant.value = PyLong_FromLong(1);
+    add_python_obj_int(data, (size_t)&(arg->v.Constant.value) - (size_t)root, 1);
     arg->v.Constant.kind = NULL;
     args->elements[0] = arg;
     expr->v.Call.args = args;
@@ -109,5 +107,4 @@ void afl_custom_deinit(my_mutator_t *data)
 {
     free(data->ast_buf);
     free(data);
-    Py_Finalize();
 }

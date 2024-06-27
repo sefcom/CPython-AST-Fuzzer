@@ -95,4 +95,4 @@ else
 fi
 
 # python-config --version == $CPYTHON_VERSION
-gcc $WORK_DIR/src/mutators/*.c -I$AFLPP_PATH/include $(python-config --includes) $(python-config --includes)/internal $(python-config --ldflags --embed) -o ./fuzzer.so --shared
+nix-shell --pure --command "clang $WORK_DIR/src/mutators/*.c -I$AFLPP_PATH/include -I$CPYTHON_PATH -I$CPYTHON_PATH/Include -I$CPYTHON_PATH/Include/internal -o ./fuzzer.so --shared -O3 -march=native" $WORK_DIR/aflpp.nix
