@@ -4,13 +4,13 @@ set -e
 WORK_DIR=$(readlink -f .)
 cd $WORK_DIR
 
-CPYTHON_VERSION=3.12
+CPYTHON_VERSION=v3.12.4
 CPYTHON_PATH=$(readlink -f ./cpython)
+CPYTHON_BIN=$(readlink -f ./cpython-bin)
 AFLPP_VER=dev
 AFLPP_PATH=$(readlink -f ./AFLplusplus)
-ENTRY_PATH=$(readlink -f ./fuzzer-entry)
 USING_CORE=7
-MODE=lto # fast, lto
+MODE=fast # fast, lto
 
 SKIP_AFL=0
 SKIP_CPYTHON=0
@@ -85,7 +85,7 @@ else
         
         echo -e "${GREEN}[INFO] configuring CPython$NC"
         # nix-shell --pure --command "autoreconf -fi" $WORK_DIR/cpython.nix
-        nix-shell --pure --command "./configure CC='ccache $AFLPP_PATH/afl-clang-$MODE' CXX='ccache $AFLPP_PATH/afl-clang-$MODE++' --disable-shared" $WORK_DIR/cpython.nix
+        nix-shell --pure --command "./configure CC='ccache $AFLPP_PATH/afl-clang-$MODE' CXX='ccache $AFLPP_PATH/afl-clang-$MODE++' --prefix=$CPYTHON_BIN --disable-shared" $WORK_DIR/cpython.nix
     fi
 
     echo -e "${GREEN}[INFO] patching CPython$NC"
@@ -97,7 +97,10 @@ else
     echo -n "$CPYTHON_PATH/Programs/python.c" >> $WORK_DIR/afl-allow-list.txt
     
     echo -e "${GREEN}[INFO] building CPython$NC"
-    nix-shell --pure --command "AFL_LLVM_ALLOWLIST='$WORK_DIR/afl-allow-list.txt' make -s -j$USING_CORE build" $WORK_DIR/cpython.nix
+    rm -rf $CPYTHON_BIN
+    # since the persistent mode will interrup normal main function, hence we need to suspend the tests of cpython
+    sed -i 's/^TESTPYTHON=.*/TESTPYTHON=echo/' $CPYTHON_PATH/Makefile
+    nix-shell --pure --command "AFL_LLVM_ALLOWLIST='$WORK_DIR/afl-allow-list.txt' make -s -j$USING_CORE build_all" $WORK_DIR/cpython.nix
     cd $WORK_DIR
 fi
 

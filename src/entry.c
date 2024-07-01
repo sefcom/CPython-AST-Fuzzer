@@ -52,6 +52,7 @@ PyObject **recover_python_objs(void *buf, size_t len)
 // from pythonrun.c
 int fuzzer_entry(mod_ty mod, size_t len)
 {
+  signal(SIGSEGV, SIG_DFL);
   PyArena *arena = _PyArena_New();
   if (arena == NULL)
   {
@@ -93,6 +94,7 @@ __AFL_FUZZ_INIT();
 
 int main()
 {
+  signal(SIGSEGV, SIG_DFL);
   // anything else here, e.g. command line arguments, initialization, etc.
   Py_Initialize();
 #ifdef __AFL_HAVE_MANUAL_CONTROL
