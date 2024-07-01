@@ -9,6 +9,7 @@ pkgs.mkShell {
     pkgs.ccache
     pkgs.gmp
     pkgs.capstone_4
+    pkgs.python3
   ];
   shellHook = ''
     export LLVM_CONFIG=llvm-config;

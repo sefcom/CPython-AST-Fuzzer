@@ -10,9 +10,11 @@ AFLPP_VER=dev
 AFLPP_PATH=$(readlink -f ./AFLplusplus)
 ENTRY_PATH=$(readlink -f ./fuzzer-entry)
 USING_CORE=7
+MODE=lto # fast, lto
 
 SKIP_AFL=0
 SKIP_CPYTHON=0
+SKIP_CPYTHON_CONFIGURE=0
 
 # COLORs
 RED='\033[0;31m'
@@ -26,13 +28,16 @@ while [ "$1" != "" ]; do
                                 ;;
         -c | --skip-cpython )   SKIP_CPYTHON=1
                                 ;;
+        -cc | --skip-cpython-configure )  SKIP_CPYTHON_CONFIGURE=1
+                                ;;
         -j | --jobs )           shift
                                 USING_CORE=$1
                                 ;;
-        --clean )               rm -rf $CPYTHON_PATH $AFLPP_PATH $CPYTHON_BIN
+        --clean )               rm -rf $CPYTHON_PATH $AFLPP_PATH
                                 exit
                                 ;;
         * )                     echo "Invalid argument $1"
+                                exit
                                 ;;
     esac
     shift
@@ -72,15 +77,17 @@ if [ $SKIP_CPYTHON -eq 1 ]; then
     echo -e "[INFO] skip building CPython"
 else
     cd $CPYTHON_PATH
-    if [ -f "Makefile" ]; then
-        echo "$GREEN[INFO] cleaning CPython$NC"
-        make clean
+    if [ $SKIP_CPYTHON_CONFIGURE -eq 0 ]; then
+        if [ -f "Makefile" ]; then
+            echo "$GREEN[INFO] cleaning CPython$NC"
+            make clean
+        fi
+        
+        echo -e "${GREEN}[INFO] configuring CPython$NC"
+        # nix-shell --pure --command "autoreconf -fi" $WORK_DIR/cpython.nix
+        nix-shell --pure --command "./configure CC='ccache $AFLPP_PATH/afl-clang-$MODE' CXX='ccache $AFLPP_PATH/afl-clang-$MODE++' --disable-shared" $WORK_DIR/cpython.nix
     fi
-    
-    echo -e "${GREEN}[INFO] configuring CPython$NC"
-    # nix-shell --pure --command "autoreconf -fi" $WORK_DIR/cpython.nix
-    nix-shell --pure --command "./configure CC='ccache $AFLPP_PATH/afl-clang-lto' CXX='ccache $AFLPP_PATH/afl-clang-lto++' --prefix=$CPYTHON_BIN --disable-shared" $WORK_DIR/cpython.nix
-    
+
     echo -e "${GREEN}[INFO] patching CPython$NC"
     cp $WORK_DIR/src/entry.c $CPYTHON_PATH/Programs/python.c
     if [ "$(tail $CPYTHON_PATH/Python/pythonrun.c -n 1)" = "#endif" ]; then
@@ -95,4 +102,5 @@ else
 fi
 
 # python-config --version == $CPYTHON_VERSION
-nix-shell --pure --command "clang $WORK_DIR/src/mutators/*.c -I$AFLPP_PATH/include -I$CPYTHON_PATH -I$CPYTHON_PATH/Include -I$CPYTHON_PATH/Include/internal -o ./fuzzer.so --shared -O3 -march=native" $WORK_DIR/aflpp.nix
+nix-shell --pure --command "clang $WORK_DIR/src/mutators/*.c -I$AFLPP_PATH/include -I$CPYTHON_PATH -I$CPYTHON_PATH/Include -I$CPYTHON_PATH/Include/internal -o $WORK_DIR/fuzzer.so --shared -O3 -march=native" $WORK_DIR/aflpp.nix
+nix-shell --pure --command "clang $WORK_DIR/src/dumpAST.c -I$CPYTHON_PATH -I$CPYTHON_PATH/Include -I$CPYTHON_PATH/Include/internal -o $WORK_DIR/dumpAST" $WORK_DIR/aflpp.nix

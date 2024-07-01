@@ -34,9 +34,9 @@ my_mutator_t *afl_custom_init(afl_state_t *afl, unsigned int seed)
         return NULL;
     }
 
-    data->ast_buf_size = 0x500;
+    data->dummy_ast.ast_buf_size = 0x500;
 
-    if ((data->ast_buf = calloc(1, data->ast_buf_size)) == NULL)
+    if ((data->dummy_ast.ast_buf = calloc(1, data->dummy_ast.ast_buf_size)) == NULL)
     {
 
         perror("afl_custom_init malloc");
@@ -45,26 +45,36 @@ my_mutator_t *afl_custom_init(afl_state_t *afl, unsigned int seed)
 
     // dummy AST
     // print(1)
-    mod_ty root = new_mod(data);
-    asdl_stmt_seq *body = new_body(data, 1);
+    ast_data_t *dummy_ast = &(data->dummy_ast);
+    mod_ty root = new_mod(dummy_ast);
+    asdl_stmt_seq *body = new_body(dummy_ast, 2);
     root->v.Interactive.body = body;
 
-    stmt_ty stmt = new_stmt(data);
-    body->elements[0] = stmt;
+    // docstring
+    stmt_ty stmt_doc = new_stmt(dummy_ast);
+    body->elements[0] = stmt_doc;
+    stmt_doc->kind = Expr_kind;
+    expr_ty expr_doc = new_expr(dummy_ast);
+    stmt_doc->v.Expr.value = expr_doc;
+    expr_doc->kind = Constant_kind;
+    add_python_obj_str(dummy_ast, (size_t)&(expr_doc->v.Constant.value) - (size_t)root, "dummy");
+
+    stmt_ty stmt = new_stmt(dummy_ast);
+    body->elements[1] = stmt;
     stmt->kind = Expr_kind;
 
-    expr_ty expr = new_expr(data);
+    expr_ty expr = new_expr(dummy_ast);
     expr->kind = Call_kind;
-    expr->v.Call.func = new_func(data, "print");
+    expr->v.Call.func = new_func(dummy_ast, "print");
 
-    asdl_expr_seq *args = new_args(data, 1);
-    expr_ty arg = new_expr(data);
+    asdl_expr_seq *args = new_args(dummy_ast, 1);
+    expr_ty arg = new_expr(dummy_ast);
     arg->kind = Constant_kind;
-    add_python_obj_int(data, (size_t)&(arg->v.Constant.value) - (size_t)root, 1);
+    add_python_obj_int(dummy_ast, (size_t)&(arg->v.Constant.value) - (size_t)root, 1);
     arg->v.Constant.kind = NULL;
     args->elements[0] = arg;
     expr->v.Call.args = args;
-    expr->v.Call.keywords = new_keywords(data, 0);
+    expr->v.Call.keywords = new_keywords(dummy_ast, 0);
 
     data->afl = afl;
 
@@ -93,8 +103,13 @@ size_t afl_custom_fuzz(my_mutator_t *data, uint8_t *buf, size_t buf_size,
                        size_t max_size)
 {
 
-    // ignore buf?
-    // TODO
+    if(strcmp(buf, "PLAC") == 0){
+        // ignore buf
+        // do mutation on dummy AST
+        // TODO
+        *out_buf = data->dummy_ast.ast_buf;
+        return data->dummy_ast.ast_buf_size;
+    }
     return 0;
 }
 
@@ -105,6 +120,13 @@ size_t afl_custom_fuzz(my_mutator_t *data, uint8_t *buf, size_t buf_size,
  */
 void afl_custom_deinit(my_mutator_t *data)
 {
-    free(data->ast_buf);
+    if(data->dummy_ast.ast_buf_size !=0){
+        free(data->dummy_ast.ast_buf);
+    }
+
+    if(data->ast_buf.ast_buf_size != 0){
+        free(data->ast_buf.ast_buf);
+    }
+
     free(data);
 }

@@ -6,3 +6,5 @@ seeds_dir
 afl-allow-list.txt
 .vscode
 fuzzer.so
+dumpAST
+.gdb_history

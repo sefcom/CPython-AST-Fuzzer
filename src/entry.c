@@ -44,7 +44,7 @@ PyObject **recover_python_objs(void *buf, size_t len)
       objs[i] = PyLong_FromSize_t(obj->val.number);
       break;
     }
-    (PyObject **)(buf + obj->offset) = objs[i];
+    *(PyObject **)(buf + obj->offset) = objs[i];
   }
   return objs;
 }
@@ -52,7 +52,6 @@ PyObject **recover_python_objs(void *buf, size_t len)
 // from pythonrun.c
 int fuzzer_entry(mod_ty mod, size_t len)
 {
-  Py_Initialize();
   PyArena *arena = _PyArena_New();
   if (arena == NULL)
   {
@@ -83,36 +82,40 @@ int fuzzer_entry(mod_ty mod, size_t len)
     objs++;
   }
   free(objs);
-  Py_Finalize();
 }
 
 __AFL_FUZZ_INIT();
 
+/* To ensure checks are not optimized out it is recommended to disable
+   code optimization for the fuzzer harness main() */
+#pragma clang optimize off
+#pragma GCC            optimize("O0")
+
 int main()
 {
-
   // anything else here, e.g. command line arguments, initialization, etc.
+  Py_Initialize();
 #ifdef __AFL_HAVE_MANUAL_CONTROL
   __AFL_INIT();
 #endif
 
   mod_ty buf = __AFL_FUZZ_TESTCASE_BUF; // must be after __AFL_INIT
                                         // and before __AFL_LOOP!
-
   while (__AFL_LOOP(10000))
   {
-
+    // printf to stderr
+    fprintf(stderr, "buf->kind=%d\n", buf->kind);
+    printf("wdadw\n");
     int len = __AFL_FUZZ_TESTCASE_LEN; // don't use the macro directly in a
                                        // call!
 
     if (len == 0)
       continue; // check for a required/useful minimum input length
-
     /* Setup function call, e.g. struct target *tmp = libtarget_init() */
     /* Call function to be fuzzed, e.g.: */
     fuzzer_entry(buf, len);
     /* Reset state. e.g. libtarget_free(tmp) */
   }
-
+  Py_Finalize();
   return 0;
 }

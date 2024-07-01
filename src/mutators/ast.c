@@ -1,15 +1,16 @@
 #include "fuzzer.h"
 
-mod_ty new_mod(my_mutator_t *data)
+mod_ty new_mod(ast_data_t *data)
 {
     assert(data);
     mod_ty mod = data->ast_buf + data->ast_buf_used;
     ensure_add(sizeof(struct _mod), data);
-    mod->kind = Interactive_kind;
+    mod->kind = Module_kind;
+    mod->v.Module.type_ignores = empty_type_ignore_seq(data, 0); //empty
     return mod;
 }
 
-asdl_stmt_seq *new_body(my_mutator_t *data, size_t n_ele)
+asdl_stmt_seq *new_body(ast_data_t *data, size_t n_ele)
 {
     assert(data);
     assert(n_ele > 0);
@@ -20,7 +21,17 @@ asdl_stmt_seq *new_body(my_mutator_t *data, size_t n_ele)
     return body;
 }
 
-stmt_ty new_stmt(my_mutator_t *data)
+asdl_type_ignore_seq *empty_type_ignore_seq(ast_data_t *data, size_t n_ele)
+{
+    assert(data);
+    asdl_type_ignore_seq *type_ignore_seq = data->ast_buf + data->ast_buf_used;
+    ensure_add(sizeof(asdl_type_ignore_seq), data);
+    type_ignore_seq->size = n_ele;
+    type_ignore_seq->elements = (void**)type_ignore_seq->typed_elements;
+    return type_ignore_seq;
+}
+
+stmt_ty new_stmt(ast_data_t *data)
 {
     assert(data);
     stmt_ty stmt = data->ast_buf + data->ast_buf_used;
@@ -28,7 +39,7 @@ stmt_ty new_stmt(my_mutator_t *data)
     return stmt;
 }
 
-expr_ty new_expr(my_mutator_t *data)
+expr_ty new_expr(ast_data_t *data)
 {
     assert(data);
     expr_ty expr = data->ast_buf + data->ast_buf_used;
@@ -36,7 +47,7 @@ expr_ty new_expr(my_mutator_t *data)
     return expr;
 }
 
-expr_ty new_func(my_mutator_t *data, const char *name)
+expr_ty new_func(ast_data_t *data, const char *name)
 {
     assert(data);
     expr_ty func = new_expr(data);
@@ -46,7 +57,7 @@ expr_ty new_func(my_mutator_t *data, const char *name)
     return func;
 }
 
-asdl_expr_seq *new_args(my_mutator_t *data, size_t n_ele)
+asdl_expr_seq *new_args(ast_data_t *data, size_t n_ele)
 {
     assert(data);
     assert(n_ele >= 0);
@@ -57,7 +68,7 @@ asdl_expr_seq *new_args(my_mutator_t *data, size_t n_ele)
     return args;
 }
 
-asdl_keyword_seq *new_keywords(my_mutator_t *data, size_t n_ele)
+asdl_keyword_seq *new_keywords(ast_data_t *data, size_t n_ele)
 {
     assert(data);
     assert(n_ele >= 0);
