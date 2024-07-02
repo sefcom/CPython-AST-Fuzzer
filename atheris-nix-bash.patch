@@ -1,0 +1,40 @@
+diff --git a/setup.py b/setup.py
+index 68ecaa5..3529c18 100644
+--- a/setup.py
++++ b/setup.py
+@@ -73,7 +73,7 @@ def check_libfuzzer_version(libfuzzer):
+   current_path = os.path.dirname(os.path.realpath(__file__))
+   try:
+     version = subprocess.check_output(
+-        [current_path + "/setup_utils/check_libfuzzer_version.sh", libfuzzer])
++        ["bash",current_path + "/setup_utils/check_libfuzzer_version.sh", libfuzzer])
+   except subprocess.CalledProcessError as e:
+     sys.stderr.write("Failed to check libFuzzer version: %s" % e.stderr)
+     sys.stderr.write("Assuming libFuxzzer is up-to-date.")
+@@ -87,7 +87,7 @@ def upgrade_libfuzzer(libfuzzer):
+   current_path = os.path.dirname(os.path.realpath(__file__))
+   try:
+     new_libfuzzer = subprocess.check_output(
+-        [current_path + "/setup_utils/upgrade_libfuzzer.sh", libfuzzer])
++        ["bash",current_path + "/setup_utils/upgrade_libfuzzer.sh", libfuzzer])
+   except subprocess.CalledProcessError as e:
+     sys.stderr.write("libFuzzer upgrade failed: %s" % e.stderr)
+     return libfuzzer
+@@ -103,7 +103,7 @@ def get_libfuzzer_lib():
+   current_path = os.path.dirname(os.path.realpath(__file__))
+   try:
+     libfuzzer = subprocess.check_output(
+-        [current_path + "/setup_utils/find_libfuzzer.sh"])
++        ["bash",current_path + "/setup_utils/find_libfuzzer.sh"])
+   except subprocess.CalledProcessError as e:
+     sys.stderr.write(no_libfuzzer_error + "\n")
+     raise RuntimeError(no_libfuzzer_error)
+@@ -424,7 +424,7 @@ class BuildExt(build_ext):
+     """Generate a .so that contains both libFuzzer and a sanitizer."""
+     current_path = os.path.dirname(os.path.realpath(__file__))
+ 
+-    new_sanitizer = subprocess.check_output([
++    new_sanitizer = subprocess.check_output(["bash",
+         os.path.join(current_path, "setup_utils/merge_libfuzzer_sanitizer.sh"),
+         libfuzzer, sanitizer, strip_preinit
+     ])
