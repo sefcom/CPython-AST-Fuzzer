@@ -38,3 +38,19 @@ index 68ecaa5..3529c18 100644
          os.path.join(current_path, "setup_utils/merge_libfuzzer_sanitizer.sh"),
          libfuzzer, sanitizer, strip_preinit
      ])
+diff --git a/setup_utils/merge_libfuzzer_sanitizer.sh b/setup_utils/merge_libfuzzer_sanitizer.sh
+index 81be4c7..a5d6232 100755
+--- a/setup_utils/merge_libfuzzer_sanitizer.sh
++++ b/setup_utils/merge_libfuzzer_sanitizer.sh
+@@ -30,9 +30,9 @@ if [ -z "$CXX" ]; then
+     export CXX="g++"
+   fi
+ fi
+-
++chmod 755 "$tmpdir"
+ cp "$sanitizer" "$tmp_sanitizer"
+-
++chmod 666 "$tmp_sanitizer"
+ ar d "$tmp_sanitizer" $strip_preinit  # Intentionally not quoted
+ 
+ "$CXX" -Wl,--whole-archive "$libfuzzer" "$tmp_sanitizer" -Wl,--no-whole-archive -lpthread -ldl -shared -o "$tmp_merged"

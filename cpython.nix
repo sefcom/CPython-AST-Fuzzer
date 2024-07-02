@@ -8,7 +8,7 @@ let
   hashs = {
     # "3.12.2" = "sha256-vigRLayBPSBTVFwUvxOhZAGiGHfxpp626l2ExKDz2HA=";
     # "3.12.4" = "sha256-9tQZpth0OrJnAIAbSQjSbZfouYbhT5XeMbMt4rDnlVQ=";
-    "3.11.9" = "";
+    "3.11.9" = "sha256-mx6JZSP8UQaREmyGRAbZNgo9Hphqy9pZzaV7Wr2kW4c=";
   };
   py_ver = builtins.match "^([3])\\.([0-9]+)\\.([0-9]+)" py_ver_str;
   python_base = if builtins.elemAt py_ver 1 == "12" then pkgs.python312 else pkgs.python311;
@@ -32,7 +32,9 @@ let
     format = "pyproject";
     preBuild = ''
       export CLANG_BIN=${pkgs.clang_17}/bin/clang;
+      export LIBFUZZER_LIB=${pkgs.llvmPackages.compiler-rt-libc}/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a;
     '';
+    build-inputs = [ pkgs.clang_17 pkgs.llvm_17 pkgs.lld_17 pkgs.llvmPackages.compiler-rt-libc ];
   };
   pyInstaller = ps: deps: ps.buildPythonPackage {
     src = pkgs.fetchFromGitHub { owner = "pyinstaller"; repo = "pyinstaller"; rev = "v6.8.0"; hash = "sha256-OXbP2SbsQ/FzA4gIuj9Wyar0YEKYOPkG9QMoTFUzM9I="; };
