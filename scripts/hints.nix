@@ -34,7 +34,7 @@ pkgs.mkShell {
         fi
     done
     ensure_symlink ${nix_pyenv_directory}/python ${pyenv}/bin/python
-    export CPYTHON_INCLUDE=${python_custom_plain}/include;
+    export CPYTHON_INCLUDE=${python_custom_plain}/include/python3.11;
     export CLANG_BIN=${clang}/bin/clang;
   '';
 }

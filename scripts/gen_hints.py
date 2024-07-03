@@ -8,7 +8,7 @@ TEMPLATE="""
             "includePath": [
                 "${workspaceFolder}/**",
                 "CPYTHON_INCLUDE",
-                "CPYTHON_INCLUDE/internal",
+                "CPYTHON_INCLUDE/internal"
             ],
             "defines": [],
             "compilerPath": "CLANG_BIN",
