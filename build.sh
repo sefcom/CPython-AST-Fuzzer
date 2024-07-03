@@ -2,6 +2,7 @@
 set -e
 
 WORK_DIR=$(readlink -f .)
+SCRIPT_DIR=$(readlink -f ./scripts)
 cd $WORK_DIR
 
 CPYTHON_VERSION=3.11.9
@@ -55,12 +56,12 @@ else
     git apply $WORK_DIR/atheris-nix-bash.patch
 
     echo -e "${GREEN}[INFO] building Atheris$NC"
-    nix-shell --pure --command "echo -e '${GREEN}[INFO] finished building Atheris$NC'" $WORK_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
+    nix-shell --pure --command "echo -e '${GREEN}[INFO] finished building Atheris$NC'" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
     cd $WORK_DIR
 fi
 
 echo -e "${GREEN}[INFO] building pyFuzzer$NC"
 mkdir -p $BUILD_PATH
 cd $BUILD_PATH
-nix-shell --pure --command "cmake $SRC_PATH" $WORK_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
-nix-shell --pure --command "make -j$USING_CORE" $WORK_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
+nix-shell --pure --command "cmake $SRC_PATH" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
+nix-shell --pure --command "make -j$USING_CORE" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION

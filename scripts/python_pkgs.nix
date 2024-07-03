@@ -1,17 +1,19 @@
 pkgs: ps: with ps;
 let
+  llvm_pkgs = (import ./llvm_pkgs.nix pkgs).pkg_list;
+  compiler_rt_libc = (import ./llvm_pkgs.nix pkgs).compiler_rt_libc;
   atheris = deps: ps.buildPythonPackage {
     # need to patch
     # src = pkgs.fetchFromGitHub {owner="google";repo="atheris";rev="2.3.0";hash="sha256-d5T+0YnHMS9nw8lyIS2TOQhwVJDc5dLp9tlpdoViPSs=";};
-    src = ./atheris;
+    src = ../atheris;
     pname = "atheris";
     version = "2.3.0";
     build-system = deps;
     format = "pyproject";
     preBuild = ''
-      export LIBFUZZER_LIB=${pkgs.llvmPackages.compiler-rt-libc}/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a;
+      export LIBFUZZER_LIB=${compiler_rt_libc}/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a;
     '';
-    build-inputs = [ pkgs.clang_18 pkgs.llvm_18 pkgs.lld_18 pkgs.llvmPackages_18.compiler-rt-libc ];
+    build-inputs = llvm_pkgs;
   };
   pyInstaller = deps: ps.buildPythonPackage {
     src = pkgs.fetchFromGitHub { owner = "pyinstaller"; repo = "pyinstaller"; rev = "v6.8.0"; hash = "sha256-OXbP2SbsQ/FzA4gIuj9Wyar0YEKYOPkG9QMoTFUzM9I="; };

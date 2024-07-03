@@ -16,7 +16,6 @@ let
   python_base = pkgs.python311;
 in
 python_base.override {
-  stdenv = pkgs.clangStdenv;
   sourceVersion = {
     major = builtins.elemAt py_ver 0;
     minor = builtins.elemAt py_ver 1;

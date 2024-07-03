@@ -78,3 +78,8 @@ asdl_keyword_seq *new_keywords(ast_data_t *data, size_t n_ele)
     keywords->elements = (void **)keywords->typed_elements;
     return keywords;
 }
+
+PyObject *mod2addr(mod_ty mod)
+{
+    return (PyObject *) mod;
+}

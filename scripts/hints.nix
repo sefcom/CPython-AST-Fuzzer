@@ -4,11 +4,13 @@ let
   pkgs = import <nixpkgs> { };
   python_custom_plain = import ./plain_python.nix py_ver_str;
   python_pkgs = import ./python_pkgs.nix pkgs;
-  nix_pyenv_directory = ".nix-pyenv";
+  nix_pyenv_directory = "../.nix-pyenv";
+  llvm_pkgs = (import ./llvm_pkgs.nix pkgs).pkg_list;
+  clang = (import ./llvm_pkgs.nix pkgs).clang;
   pyenv = python_custom_plain.withPackages python_pkgs;
 in
 pkgs.mkShell {
-  packages = [
+  packages = llvm_pkgs ++ [
     pyenv
   ];
   shellHook = ''
@@ -32,5 +34,7 @@ pkgs.mkShell {
         fi
     done
     ensure_symlink ${nix_pyenv_directory}/python ${pyenv}/bin/python
+    export CPYTHON_INCLUDE=${python_custom_plain}/include;
+    export CLANG_BIN=${clang}/bin/clang;
   '';
 }
