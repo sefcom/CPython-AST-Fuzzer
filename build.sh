@@ -6,10 +6,11 @@ SCRIPT_DIR=$(readlink -f ./scripts)
 cd $WORK_DIR
 
 CPYTHON_VERSION=3.11.9
-ATHERIS_VERSION=master
+ATHERIS_VERSION=2.3.0
 ATHERIS_PATH=$(readlink -f ./atheris)
-BUILD_PATH=$(readlink -f ./build)
+BUILD_PATH=$(readlink -f build)
 SRC_PATH=$(readlink -f ./src)
+PATCHED_PATH=$(readlink -f ./patched_libs)
 USING_CORE=7
 
 SKIP_ATHERIS=0
@@ -27,7 +28,7 @@ while [ "$1" != "" ]; do
         -j | --jobs )           shift
                                 USING_CORE=$1
                                 ;;
-        --clean )               rm -rf $CPYTHON_PATH $CPYTHON_BIN
+        --clean )               rm -rf $ATHERIS_PATH $BUILD_PATH
                                 exit
                                 ;;
         * )                     echo "Invalid argument $1"
@@ -45,7 +46,7 @@ else
 fi
 
 if [ $SKIP_ATHERIS -eq 1 ]; then
-    echo -e "[INFO] skip building atheris"
+    echo -e "[INFO] skip building cpython and/or atheris"
 else
     cd $ATHERIS_PATH
 
@@ -58,6 +59,9 @@ else
     echo -e "${GREEN}[INFO] building Atheris$NC"
     nix-shell --pure --command "echo -e '${GREEN}[INFO] finished building Atheris$NC'" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
     cd $WORK_DIR
+    
+    echo -e "${GREEN}[INFO] patching cpython lib$NC"
+    nix-shell --pure --command "python $SCRIPT_DIR/patch_python.py \$PYTHON_PATH $PATCHED_PATH" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
 fi
 
 echo -e "${GREEN}[INFO] building pyFuzzer$NC"

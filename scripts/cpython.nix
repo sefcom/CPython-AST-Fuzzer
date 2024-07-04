@@ -5,6 +5,7 @@ let
   python_pkgs = import ./python_pkgs.nix pkgs;
   llvm_pkgs = (import ./llvm_pkgs.nix pkgs).pkg_list;
   python_custom = python_custom_plain.withPackages (ps: with ps; (python_pkgs ps));
+
 in
 pkgs.mkShell {
   packages = llvm_pkgs ++ [
@@ -13,8 +14,9 @@ pkgs.mkShell {
   ];
   shellHook = ''
     export ASAN_OPTIONS='detect_leaks=0';
-    export CC="${pkgs.ccache}/bin/ccache ${pkgs.clang_18}/bin/clang";
-    export CXX="${pkgs.ccache}/bin/ccache ${pkgs.clang_18}/bin/clang++";
+    export CC="${pkgs.clang_18}/bin/clang";
+    export CXX="${pkgs.clang_18}/bin/clang++";
     export LDSHARED="${pkgs.clang_18}/bin/clang -shared";
+    export PYTHON_PATH="${python_custom}";
   '';
 }

@@ -16,7 +16,7 @@ let
     build-inputs = llvm_pkgs;
   };
   pyInstaller = deps: ps.buildPythonPackage {
-    src = pkgs.fetchFromGitHub { owner = "pyinstaller"; repo = "pyinstaller"; rev = "v6.8.0"; hash = "sha256-OXbP2SbsQ/FzA4gIuj9Wyar0YEKYOPkG9QMoTFUzM9I="; };
+    src = pkgs.fetchFromGitHub { owner = "pyinstaller"; repo = "pyinstaller"; rev = "v6.8.0"; hash = "sha256-PZO1RJQV2krKQ5IOD3olEVMn8Q64nL3kfpNkPECyIv8="; };
     build-system = deps;
     pname = "pyInstaller";
     version = "6.8.0";
@@ -30,6 +30,7 @@ let
   };
 in
 [
+  lief # for patching python shared obj symbols
   (atheris [
     pybind11
     altgraph

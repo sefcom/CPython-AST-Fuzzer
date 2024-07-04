@@ -1,5 +1,6 @@
 atheris
 build
+patched_libs
 .gdb_history
 .nix-pyenv
 .vscode
