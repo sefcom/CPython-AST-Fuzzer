@@ -2,14 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 project(pyFuzzer VERSION 0.1 LANGUAGES C)
 set(CMAKE_C_STANDARD 17)
 
-# message(STATUS "Python path: $ENV{PYTHON_PATH}")
-# find_package(Python3 EXACT 3.11.9 REQUIRED COMPONENTS Development) # not works since nix's python doesn't have cmake file
-
 add_library(pyFuzzer_common INTERFACE)
-
-# target_include_directories(pyFuzzer_common INTERFACE ${Python3_INCLUDE_DIRS} ${Python3_INCLUDE_DIRS}/internal)
-# target_link_libraries(pyFuzzer_common INTERFACE ${Python3_LIBRARIES})
-
 
 target_include_directories(pyFuzzer_common INTERFACE
     $ENV{PYTHON_PATH}/include/python3.11
@@ -18,9 +11,7 @@ target_include_directories(pyFuzzer_common INTERFACE
 target_compile_options(pyFuzzer_common INTERFACE -O3 -march=native -fsanitize=address,fuzzer-no-link)
 target_link_options(pyFuzzer_common INTERFACE -fsanitize=address,fuzzer-no-link)
 
-# file(GLOB PATCHED_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/../patched_libs/*)
-# message(STATUS "Patched libs: ${PATCHED_LIBS}")
-# target_link_libraries(pyFuzzer_common INTERFACE ${PATCHED_LIBS})
+target_link_libraries(pyFuzzer_common INTERFACE $ENV{PYTHON_PATH}/lib/libpython3.11.so)
 
 # -- pyFuzzerHelper -- 
 # mutators, utils and ast helpers etc
@@ -28,6 +19,7 @@ target_link_options(pyFuzzer_common INTERFACE -fsanitize=address,fuzzer-no-link)
 file(GLOB HELPER_SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/utils/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/python/*.c
 )
 
 add_library(pyFuzzerHelper SHARED ${HELPER_SRC_FILES})
