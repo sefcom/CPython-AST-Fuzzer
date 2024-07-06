@@ -19,5 +19,9 @@ mod_ty init_dummy_ast(PyArena **arena_ptr)
     body->elements[0] = call;
     asdl_type_ignore_seq *ignored = _Py_asdl_type_ignore_seq_new(0, arena);
     
-    return _PyAST_Module(body, ignored, arena);
+    mod_ty mod = _PyAST_Module(body, ignored, arena);
+    #ifdef DEBUG
+    _PyAST_Validate(mod);
+    #endif
+    return mod;
 }

@@ -5,11 +5,6 @@
 #include "Python.h"
 #include "pycore_ast.h"
 
-typedef struct{
-    mod_ty mod;
-    PyArena *arena;
-} ast_data_t;
-
 PyObject *run_mod(mod_ty mod);
 
 #endif // TARGET_H

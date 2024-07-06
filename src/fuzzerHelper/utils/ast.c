@@ -4,6 +4,7 @@ PyObject *PyUnicode_FromString_Arena(const char *s, PyArena *arena)
 {
     PyObject *re = (PyObject *)PyUnicode_FromString(s);
     _PyArena_AddPyObject(arena, re);
+    assert(PyUnicode_READY(re) == 0);
     return re;
 }
 

@@ -15,12 +15,15 @@ let
   # python_base = if builtins.elemAt py_ver 1 == "12" then pkgs.python312 else pkgs.python311;
   python_base = pkgs.python311;
 in
-python_base.override {
+((python_base.override {
   sourceVersion = {
     major = builtins.elemAt py_ver 0;
     minor = builtins.elemAt py_ver 1;
     patch = builtins.elemAt py_ver 2;
     suffix = "";
   };
-  hash = hashs."${py_ver_str}";
-}
+  hash = "";
+}).overrideAttrs (oldAttrs:
+{
+  src = ../cpython;
+}))

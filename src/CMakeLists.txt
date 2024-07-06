@@ -8,9 +8,11 @@ target_include_directories(pyFuzzer_common INTERFACE
     $ENV{PYTHON_PATH}/include/python3.11
     $ENV{PYTHON_PATH}/include/python3.11/internal # idk why Python3_INCLUDE_DIR is empty and Python3_INCLUDE_DIRS only contain one path
 )
-target_compile_options(pyFuzzer_common INTERFACE -O3 -march=native -fsanitize=address,fuzzer-no-link)
+# -O3 -march=native
+target_compile_options(pyFuzzer_common INTERFACE -fsanitize=address,fuzzer-no-link)
 target_link_options(pyFuzzer_common INTERFACE -fsanitize=address,fuzzer-no-link)
 
+message(STATUS "PYTHON_PATH: $ENV{PYTHON_PATH}")
 target_link_libraries(pyFuzzer_common INTERFACE $ENV{PYTHON_PATH}/lib/libpython3.11.so)
 
 # -- pyFuzzerHelper -- 
@@ -19,7 +21,6 @@ target_link_libraries(pyFuzzer_common INTERFACE $ENV{PYTHON_PATH}/lib/libpython3
 file(GLOB HELPER_SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/utils/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/python/*.c
 )
 
 add_library(pyFuzzerHelper SHARED ${HELPER_SRC_FILES})

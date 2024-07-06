@@ -8,6 +8,7 @@ cd $WORK_DIR
 CPYTHON_VERSION=3.11.9
 ATHERIS_VERSION=2.3.0
 ATHERIS_PATH=$(readlink -f ./atheris)
+CPYTHON_PATH=$(readlink -f ./cpython)
 BUILD_PATH=$(readlink -f build)
 SRC_PATH=$(readlink -f ./src)
 PATCHED_PATH=$(readlink -f ./patched_libs)
@@ -28,7 +29,7 @@ while [ "$1" != "" ]; do
         -j | --jobs )           shift
                                 USING_CORE=$1
                                 ;;
-        --clean )               rm -rf $ATHERIS_PATH $BUILD_PATH
+        --clean )               rm -rf $ATHERIS_PATH $BUILD_PATH $CPYTHON_PATH
                                 exit
                                 ;;
         * )                     echo "Invalid argument $1"
@@ -45,6 +46,14 @@ else
     git clone --quiet --depth=1 --branch=$ATHERIS_VERSION https://github.com/google/atheris.git $ATHERIS_PATH
 fi
 
+if [ -d $CPYTHON_PATH ]; then
+    echo -e "[WARN] using cached cpython"
+else
+    echo -e "[INFO] cloning cpython into $CPYTHON_PATH"
+    git clone --quiet --depth=1 --branch=v$CPYTHON_VERSION https://github.com/python/cpython.git $CPYTHON_PATH
+    cd $WORK_DIR
+fi
+
 if [ $SKIP_ATHERIS -eq 1 ]; then
     echo -e "[INFO] skip building cpython and/or atheris"
 else
@@ -56,9 +65,15 @@ else
     git reset --hard HEAD
     git apply $WORK_DIR/atheris-nix-bash.patch
 
+    echo -e "${GREEN}[INFO] patching CPython$NC"
+    cd $CPYTHON_PATH
+    git reset --hard HEAD
+    python $SCRIPT_DIR/patch_python.py
+
+    cd $WORK_DIR
+
     echo -e "${GREEN}[INFO] building Atheris$NC"
     nix-shell --pure --command "echo -e '${GREEN}[INFO] finished building Atheris$NC'" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
-    cd $WORK_DIR
     
     echo -e "${GREEN}[INFO] patching cpython lib$NC"
     nix-shell --pure --command "python $SCRIPT_DIR/patch_python.py \$PYTHON_PATH $PATCHED_PATH" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
