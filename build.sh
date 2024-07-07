@@ -74,9 +74,6 @@ else
 
     echo -e "${GREEN}[INFO] building Atheris$NC"
     nix-shell --pure --command "echo -e '${GREEN}[INFO] finished building Atheris$NC'" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
-    
-    echo -e "${GREEN}[INFO] patching cpython lib$NC"
-    nix-shell --pure --command "python $SCRIPT_DIR/patch_python.py \$PYTHON_PATH $PATCHED_PATH" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
 fi
 
 echo -e "${GREEN}[INFO] building pyFuzzer$NC"

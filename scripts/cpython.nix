@@ -10,6 +10,7 @@ in
 pkgs.mkShell {
   packages = llvm_pkgs ++ [
     pkgs.cmake
+    python_custom_plain # try to fix
     python_custom
   ];
   shellHook = ''
@@ -17,6 +18,6 @@ pkgs.mkShell {
     export CC="${pkgs.clang_18}/bin/clang";
     export CXX="${pkgs.clang_18}/bin/clang++";
     export LDSHARED="${pkgs.clang_18}/bin/clang -shared";
-    export PYTHON_PATH="${python_custom}";
+    export PYTHON_PATH="${python_custom_plain}";
   '';
 }

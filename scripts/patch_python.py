@@ -3,6 +3,7 @@ import re
 
 symbols = [
     r"^_PyAST_(.*?)",
+    r"^_Py_asdl_(.*?)",
     "PyAST_mod2obj"
 ]
 include_h = "#include <pyport.h>"
@@ -21,7 +22,7 @@ for header in PYTHON_INCLUDE.rglob("*.h"):
         content = f.readlines()
     patched = False
     include_stat = False
-    for i in range(len(content)): # pylint: disable=consider-using-enumerate
+    for i in range(len(content)):  # pylint: disable=consider-using-enumerate
         line = content[i]
         if line.startswith("extern"):
             continue
@@ -32,7 +33,7 @@ for header in PYTHON_INCLUDE.rglob("*.h"):
         if result:
             for symbol in symbols:
                 if re.match(symbol, result.group(3)):
-                    print("patching ", result.group(3))
+                    print("exported ", result.group(3))
                     line = line.replace(result.group(1) + result.group(2), "PyAPI_FUNC(" + result.group(1) + result.group(2) + ") ")
                     # print("new line=", line, end="")
                     content[i] = line
@@ -43,4 +44,4 @@ for header in PYTHON_INCLUDE.rglob("*.h"):
             content.insert(0, include_h + "\n")
         with open(header, "w", encoding="utf8") as f:
             f.writelines(content)
-            print("modified ", header)
+            print("patching ", header)
