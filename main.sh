@@ -15,5 +15,5 @@ SRC_PATH=$(readlink -f ./src)
 CPYTHON_VERSION=3.11.9
 
 pushd $BUILD_PATH
-nix-shell --pure --command "LD_PRELOAD=\"\$(python -c \"import atheris; print(atheris.path())\")/asan_with_fuzzer.so\" python $SRC_PATH/main.py" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
+nix-shell --pure --command "LD_PRELOAD=\"\$(python $SCRIPT_DIR/get_asan.py)/asan_with_fuzzer.so\" python $SRC_PATH/main.py" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
 popd

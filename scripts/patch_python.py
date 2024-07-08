@@ -9,7 +9,7 @@ symbols = [
 include_h = "#include <pyport.h>"
 
 # type func(arg, ...
-FUNCTION_DEF = r"^([a-zA-Z_0-9]+)([\* ]*)([a-zA-Z_0-9]+)\(([a-zA-Z_0-9]+)([\* ]+)([a-zA-Z_0-9]+)([,)])(.*?)"
+FUNCTION_DEF = r"^([a-zA-Z_0-9]+)([\* ]+)([a-zA-Z_0-9]+)\(([a-zA-Z_0-9]+)([\* ]*)([a-zA-Z_0-9]*)([,)])(.*?)"
 
 PYTHON_PATH = pathlib.Path("./cpython")
 if not PYTHON_PATH.exists():
@@ -23,9 +23,11 @@ for header in PYTHON_INCLUDE.rglob("*.h"):
     patched = False
     include_stat = False
     for i in range(len(content)):  # pylint: disable=consider-using-enumerate
+        extern = False
         line = content[i]
-        if line.startswith("extern"):
-            continue
+        if line.startswith("extern "):
+            extern = True
+            line = line.removeprefix("extern ")
         if line.startswith(include_h):
             include_stat = True
             continue
@@ -34,11 +36,13 @@ for header in PYTHON_INCLUDE.rglob("*.h"):
             for symbol in symbols:
                 if re.match(symbol, result.group(3)):
                     print("exported ", result.group(3))
-                    line = line.replace(result.group(1) + result.group(2), "PyAPI_FUNC(" + result.group(1) + result.group(2) + ") ")
+                    line = line.replace(result.group(1) + result.group(2), "PyAPI_FUNC(" + result.group(1) + (result.group(2) if "*" in result.group(2) else "") + ") ")
+                    if extern:
+                        line = "extern " + line
                     # print("new line=", line, end="")
                     content[i] = line
                     patched = True
-                    continue
+                    break
     if patched:
         if not include_stat:
             content.insert(0, include_h + "\n")

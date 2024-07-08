@@ -1,7 +1,7 @@
-import sys
-import atheris
-
+import sys, os
+sys.path.insert(0, os.environ["PYTHON_PKGS_PATH"])
 sys.path.insert(0, '.')
+import atheris
 
 with atheris.instrument_imports():
   import pyFuzzerHelper
@@ -10,6 +10,7 @@ with atheris.instrument_imports():
 addr = pyFuzzerHelper.get_dummy_ast()
 pyFuzzerHelper.dump_ast(addr)
 pyFuzzerTarget.run_mod(addr)
+pyFuzzerHelper.dump_ast(addr)
 pyFuzzerHelper.free_ast(addr)
 
 

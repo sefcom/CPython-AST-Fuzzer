@@ -15,6 +15,9 @@ PyObject *run_mod(mod_ty mod)
     if(arena == NULL){
         return NULL;
     }
+    if(PyErr_Occurred()){
+        PyErr_Print();
+    }
     PyObject *code = (PyObject *)_PyAST_Compile(mod, fname, &flag, -1, arena);
     if (code == NULL)
     {
@@ -38,7 +41,7 @@ PyObject *run_mod_py(PyObject *self, PyObject *args)
     }
     ast_data_t *data = (ast_data_t *) PyLong_AsVoidPtr(mod);
     PyObject *re = run_mod(data->mod);
-    if(re) Py_DECREF(mod);
+    // if(re) Py_DECREF(mod);
     return re;
 }
 

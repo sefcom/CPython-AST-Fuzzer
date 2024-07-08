@@ -31,10 +31,14 @@ PyObject *dump_ast(PyObject *self, PyObject *args)
 	}
 	PyObject *ast_str = PyObject_CallFunctionObjArgs(ast_dump, code, NULL);
 	printf("AST=%s\n", PyUnicode_AsUTF8(ast_str));
-	Py_DECREF(addr);
+	if(PyErr_Occurred()){
+		PyErr_Print();
+		return NULL;
+	}
+	// Py_DECREF(addr);
 	Py_DECREF(code);
 	Py_DECREF(ast_module);
 	Py_DECREF(ast_dump);
 	Py_DECREF(ast_str);
-	return code;
+	Py_RETURN_NONE;
 }

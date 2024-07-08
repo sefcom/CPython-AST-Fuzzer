@@ -11,7 +11,7 @@ pkgs.mkShell {
   packages = llvm_pkgs ++ [
     pkgs.cmake
     python_custom_plain # try to fix
-    python_custom
+    # python_custom # don't insert to path
   ];
   shellHook = ''
     export ASAN_OPTIONS='detect_leaks=0';
@@ -19,5 +19,6 @@ pkgs.mkShell {
     export CXX="${pkgs.clang_18}/bin/clang++";
     export LDSHARED="${pkgs.clang_18}/bin/clang -shared";
     export PYTHON_PATH="${python_custom_plain}";
+    export PYTHON_PKGS_PATH=${python_custom}/lib/python3.11/site-packages;
   '';
 }
