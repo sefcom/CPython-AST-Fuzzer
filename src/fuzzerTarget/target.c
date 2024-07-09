@@ -27,7 +27,12 @@ PyObject *run_mod(mod_ty mod)
         Py_DECREF(fname);
         return NULL;
     }
-    PyObject *result = PyEval_EvalCode(code, PyEval_GetGlobals(), PyEval_GetLocals());
+    PyObject *globals = PyEval_GetGlobals();
+    PyObject *locals = PyEval_GetLocals();
+    if(PyErr_Occurred()){
+        return NULL;
+    }
+    PyObject *result = PyEval_EvalCode(code, globals, locals);
     if(PyErr_Occurred()){
         return NULL;
     }

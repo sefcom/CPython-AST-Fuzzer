@@ -111,7 +111,7 @@ technic required:
 [issue43838](https://bugs.python.org/issue43838) - in wild
 ```python
 class A:
-        def __eq__(self, other):
+        def __eq__(self, other: dict):
                 # expressions below are equivalent
 
                 # del other["items"]

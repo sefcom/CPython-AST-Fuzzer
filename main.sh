@@ -19,5 +19,5 @@ SRC_PATH=$(readlink -f ./src)
 CPYTHON_VERSION=3.11.9
 
 pushd $BUILD_PATH
-nix-shell --pure --command "\$PYTHON_PATH/bin/python $SRC_PATH/main.py" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
+nix-shell --pure --command "LD_PRELOAD="\$PYTHON_PKGS_PATH/asan_with_fuzzer.so" \$PYTHON_PATH/bin/python $SRC_PATH/main.py -atheris_runs=5" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
 popd

@@ -8,6 +8,13 @@ PyObject *get_dummy_ast(PyObject *self, PyObject *args) {
 	return ptr2addr(data);
 }
 
+PyObject *get_UAF2_ast(PyObject *self, PyObject *args) {
+	ast_data_t *data = (ast_data_t *)PyMem_Calloc(sizeof(ast_data_t), 1);
+	data->arena = _PyArena_New();
+	data->mod = init_UAF2(data->arena);
+	return ptr2addr(data);
+}
+
 PyObject *free_ast(PyObject *self, PyObject *args) {
 	PyObject *addr;
 	if (!PyArg_ParseTuple(args, "O", &addr))
@@ -24,6 +31,7 @@ PyObject *free_ast(PyObject *self, PyObject *args) {
 
 static struct PyMethodDef pyFuzzerHelperMethods[] = {
 	{"get_dummy_ast", get_dummy_ast, METH_NOARGS, "Get dummy AST"},
+	{"get_UAF2_ast", get_UAF2_ast, METH_NOARGS, "get UAF2 in motivated samples"},
 	{"dump_ast", dump_ast, METH_VARARGS, "Dump AST"},
 	{"free_ast", free_ast, METH_VARARGS, "Free AST"},
 	{NULL, NULL, 0, NULL}
