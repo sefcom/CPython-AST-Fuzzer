@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+###
+# run pyFuzzer by running the src/main.py
+###
+
 pushd() {
     command pushd "$@" >/dev/null
 }

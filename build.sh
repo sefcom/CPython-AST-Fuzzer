@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+###
+# build the pyFuzzer
+###
+
 WORK_DIR=$(readlink -f .)
 SCRIPT_DIR=$(readlink -f ./scripts)
 cd $WORK_DIR
