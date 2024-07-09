@@ -13,19 +13,24 @@ PyObject *run_mod(mod_ty mod)
     PyCompilerFlags flag = _PyCompilerFlags_INIT;
     PyArena *arena = _PyArena_New();
     if(arena == NULL){
+        if(!PyErr_Occurred()) PyErr_SetString(PyExc_RuntimeError, "Failed to create arena");
         return NULL;
     }
+    PyObject *code = (PyObject *)_PyAST_Compile(mod, fname, &flag, -1, arena);
     if(PyErr_Occurred()){
         PyErr_Print();
     }
-    PyObject *code = (PyObject *)_PyAST_Compile(mod, fname, &flag, -1, arena);
     if (code == NULL)
     {
+        if(!PyErr_Occurred()) PyErr_SetString(PyExc_RuntimeError, "Failed to compile mod_ty");
         _PyArena_Free(arena);
         Py_DECREF(fname);
         return NULL;
     }
     PyObject *result = PyEval_EvalCode(code, PyEval_GetGlobals(), PyEval_GetLocals());
+    if(PyErr_Occurred()){
+        return NULL;
+    }
     _PyArena_Free(arena);
     Py_DECREF(fname);
     Py_DECREF(code);

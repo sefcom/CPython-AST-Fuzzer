@@ -24,14 +24,8 @@ TEMPLATE="""
 # from https://github.com/Antares0982/nix-pyenv
 SETTINGS_TEMPLATE="""
 {
-    "python.analysis.stubPath": ".nix-pyenv",
-    "terminal.integrated.profiles.linux": {
-        "nix-shell": {
-            "path": "/run/current-system/sw/bin/nix-shell",
-            "icon": "terminal-bash"
-        }
-    },
-    "terminal.integrated.defaultProfile.linux": "nix-shell",
+    "python.analysis.stubPath": ".nix-pyenv/lib",
+    "python.analysis.extraPaths": ["./src/doc"]
 }
 """.strip()
 

@@ -1,8 +1,36 @@
 # Modified from https://github.com/Antares0982/nix-pyenv
 {py_ver_str ? "3.11.9"}:
 let
-  pkgs = import <nixpkgs> { };
-  python_custom_plain = import ./plain_python.nix py_ver_str;
+  pkgs = import <nixpkgs> { 
+    overlays = [
+      (self: super: {
+        ccacheWrapper = super.ccacheWrapper.override {
+          extraConfig = ''
+            export CCACHE_COMPRESS=1
+            export CCACHE_DIR="/nix/var/cache/ccache"
+            export CCACHE_UMASK=007
+            if [ ! -d "$CCACHE_DIR" ]; then
+              echo "====="
+              echo "Directory '$CCACHE_DIR' does not exist"
+              echo "Please create it with:"
+              echo "  sudo mkdir -m0770 '$CCACHE_DIR'"
+              echo "  sudo chown root:nixbld '$CCACHE_DIR'"
+              echo "====="
+              exit 1
+            fi
+            if [ ! -w "$CCACHE_DIR" ]; then
+              echo "====="
+              echo "Directory '$CCACHE_DIR' is not accessible for user $(whoami)"
+              echo "Please verify its access permissions"
+              echo "====="
+              exit 1
+            fi
+          '';
+        };
+      })
+    ];
+  };
+  python_custom_plain = import ./plain_python.nix pkgs py_ver_str;
   python_pkgs = import ./python_pkgs.nix pkgs;
   nix_pyenv_directory = "../.nix-pyenv";
   llvm_pkgs = (import ./llvm_pkgs.nix pkgs).pkg_list;

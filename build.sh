@@ -14,7 +14,7 @@ SRC_PATH=$(readlink -f ./src)
 PATCHED_PATH=$(readlink -f ./patched_libs)
 USING_CORE=7
 
-SKIP_ATHERIS=0
+FORCE_MODE=0
 
 # COLORs
 RED='\033[0;31m'
@@ -24,7 +24,7 @@ NC='\033[0m'
 # parse args skip-afl and skip-cpython
 while [ "$1" != "" ]; do
     case $1 in
-        -a | --skip-atheris )   SKIP_ATHERIS=1
+        -f | --force )   FORCE_MODE=1
                                 ;;
         -j | --jobs )           shift
                                 USING_CORE=$1
@@ -44,6 +44,8 @@ if [ -d $ATHERIS_PATH ]; then
 else
     echo -e "[INFO] cloning atheris into $ATHERIS_PATH"
     git clone --quiet --depth=1 --branch=$ATHERIS_VERSION https://github.com/google/atheris.git $ATHERIS_PATH
+    FORCE_MODE=1
+    cd $WORK_DIR
 fi
 
 if [ -d $CPYTHON_PATH ]; then
@@ -51,12 +53,14 @@ if [ -d $CPYTHON_PATH ]; then
 else
     echo -e "[INFO] cloning cpython into $CPYTHON_PATH"
     git clone --quiet --depth=1 --branch=v$CPYTHON_VERSION https://github.com/python/cpython.git $CPYTHON_PATH
+    FORCE_MODE=1
     cd $WORK_DIR
 fi
 
-if [ $SKIP_ATHERIS -eq 1 ]; then
-    echo -e "[INFO] skip building cpython and/or atheris"
+if [ $FORCE_MODE -eq 0 ]; then
+    echo -e "${GREEN}[INFO] skipping force building Atheris and CPython$NC"
 else
+    echo -e "${GREEN}[INFO] building Atheris and CPython$NC"
     cd $ATHERIS_PATH
 
     # PATCHING
@@ -73,7 +77,7 @@ else
     cd $WORK_DIR
 
     echo -e "${GREEN}[INFO] building Atheris$NC"
-    nix-shell --pure --command "echo -e '${GREEN}[INFO] finished building Atheris$NC'" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
+    nix-shell --pure --command "echo -e '${GREEN}[INFO] finished building Atheris and CPython$NC'" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
 fi
 
 echo -e "${GREEN}[INFO] building pyFuzzer$NC"
@@ -81,3 +85,11 @@ mkdir -p $BUILD_PATH
 cd $BUILD_PATH
 nix-shell --pure --command "cmake $SRC_PATH" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
 nix-shell --pure --command "make -j$USING_CORE" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
+
+cd $WORK_DIR
+echo -e "${GREEN}[INFO] patching output ELF files for Atheris$NC"
+# check https://github.com/google/atheris/issues/54
+$SCRIPT_DIR/patched_all_elf.sh
+
+
+echo -e "${GREEN}[INFO] finished building pyFuzzer$NC"

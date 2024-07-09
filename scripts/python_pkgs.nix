@@ -13,20 +13,26 @@ let
     preBuild = ''
       export LIBFUZZER_LIB=${compiler_rt_libc}/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a;
     '';
-    build-inputs = llvm_pkgs;
+    nativeBuildInputs = llvm_pkgs;
+    stdenv = pkgs.ccacheStdenv;
   };
   pyInstaller = deps: ps.buildPythonPackage {
     src = pkgs.fetchFromGitHub { owner = "pyinstaller"; repo = "pyinstaller"; rev = "v6.8.0"; hash = "sha256-PZO1RJQV2krKQ5IOD3olEVMn8Q64nL3kfpNkPECyIv8="; };
     build-system = deps;
+    nativeBuildInputs = llvm_pkgs;
     pname = "pyInstaller";
     version = "6.8.0";
     format = "pyproject";
+    stdenv = pkgs.ccacheStdenv;
   };
   pyinstaller-hooks-contrib = deps: ps.buildPythonPackage {
     src = pkgs.fetchFromGitHub { owner = "pyinstaller"; repo = "pyinstaller-hooks-contrib"; rev = "2024.7"; hash = "sha256-HnhqcJAGd0GWjt3ylaa3G9JOdRGz1PW9pvHjlQGc0LY="; };
     build-system = deps;
+    nativeBuildInputs = llvm_pkgs;
     pname = "pyinstaller-hooks-contrib";
     version = "2024.7";
+    format = "pyproject";
+    stdenv = pkgs.ccacheStdenv;
   };
 in
 [

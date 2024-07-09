@@ -1,13 +1,9 @@
 #include "helper.h"
 
-mod_ty init_dummy_ast(PyArena **arena_ptr)
+mod_ty init_dummy_ast(PyArena *arena)
 {
     // dummy AST
-    // print(1)
-    if(*arena_ptr == NULL){
-        *arena_ptr = _PyArena_New();
-    }
-    PyArena *arena = *arena_ptr;
+    // print("Hellow world")
     expr_ty call_name = _PyAST_Name(PyUnicode_FromString_Arena("print", arena), Load, 0, 0, 0, 0, arena);
     asdl_expr_seq *call_args = _Py_asdl_expr_seq_new(1, arena);
     call_args->typed_elements[0] = _PyAST_Constant(PyUnicode_FromString_Arena("Hello world", arena), NULL, 0, 0, 0, 0, arena);

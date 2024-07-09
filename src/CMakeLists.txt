@@ -19,8 +19,9 @@ target_link_libraries(pyFuzzer_common INTERFACE $ENV{PYTHON_PATH}/lib/libpython3
 # mutators, utils and ast helpers etc
 
 file(GLOB HELPER_SRC_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/utils/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/mutators/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/*.c
 )
 
 add_library(pyFuzzerHelper SHARED ${HELPER_SRC_FILES})
