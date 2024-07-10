@@ -5,3 +5,4 @@ build
 .gdb_history
 .nix-pyenv
 .vscode
+crash-*.txt
