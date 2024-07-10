@@ -1,5 +1,6 @@
 atheris
 cpython
+cpython*
 build
 .gdb_history
 .nix-pyenv

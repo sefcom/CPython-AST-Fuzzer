@@ -1,44 +1,44 @@
-#include "helper.h"
+#include "target.h"
 
-PyObject *dump_ast(PyObject *self, PyObject *args)
+void dump_ast(const ast_data_t *data, char *buf, size_t max_len)
 {
-	PyObject *addr;
-	if (!PyArg_ParseTuple(args, "O", &addr))
-	{
-		return NULL;
-	}
-	ast_data_t *data = (ast_data_t *)PyLong_AsVoidPtr(addr);
 	PyObject *code = PyAST_mod2obj(data->mod);
 	if (code == NULL)
 	{
-		Py_DECREF(addr);
-		return NULL;
+		return;
 	}
 	PyObject *ast_module = PyImport_ImportModule("ast");
 	if (ast_module == NULL)
 	{
-		Py_DECREF(addr);
+		fprintf(stderr, "ast_module\n");
 		Py_DECREF(code);
-		return NULL;
+		return;
 	}
 	PyObject *ast_dump = PyObject_GetAttrString(ast_module, "dump");
 	if (ast_dump == NULL)
 	{
-		Py_DECREF(addr);
+		fprintf(stderr, "ast_dump\n");
 		Py_DECREF(code);
 		Py_DECREF(ast_module);
-		return NULL;
+		return;
 	}
 	PyObject *ast_str = PyObject_CallFunctionObjArgs(ast_dump, code, NULL);
-	printf("AST=%s\n", PyUnicode_AsUTF8(ast_str));
+	// printf("AST=%s\n", PyUnicode_AsUTF8(ast_str));
+	Py_ssize_t len;
+	const char *str = PyUnicode_AsUTF8AndSize(ast_str, &len);
+	if(len >= max_len){
+		fprintf(stderr, "Buffer is not enough for backup ast data for crash report\n");
+	}else{
+		memcpy(buf, str, len);
+		buf[len] = '\0';
+	}
 	if(PyErr_Occurred()){
 		PyErr_Print();
-		return NULL;
+		return;
 	}
 	// Py_DECREF(addr);
 	Py_DECREF(code);
 	Py_DECREF(ast_module);
 	Py_DECREF(ast_dump);
 	Py_DECREF(ast_str);
-	Py_RETURN_NONE;
 }

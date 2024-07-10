@@ -1,12 +1,7 @@
 #include "target.h"
-
-#define Py_BUILD_CORE 1
-#include "Python.h"
-#include "pycore_ast.h"
 #include "pycore_compile.h"
-#include "pycore_global_strings.h"
 
-PyObject *run_mod(mod_ty mod)
+void run_mod(const mod_ty mod)
 {
     assert(mod != NULL);
     PyObject *fname = PyUnicode_FromString("<fuzzed>");
@@ -14,7 +9,7 @@ PyObject *run_mod(mod_ty mod)
     PyArena *arena = _PyArena_New();
     if(arena == NULL){
         if(!PyErr_Occurred()) PyErr_SetString(PyExc_RuntimeError, "Failed to create arena");
-        return NULL;
+        PyErr_Print();
     }
     PyObject *code = (PyObject *)_PyAST_Compile(mod, fname, &flag, -1, arena);
     if(PyErr_Occurred()){
@@ -25,45 +20,43 @@ PyObject *run_mod(mod_ty mod)
         if(!PyErr_Occurred()) PyErr_SetString(PyExc_RuntimeError, "Failed to compile mod_ty");
         _PyArena_Free(arena);
         Py_DECREF(fname);
-        return NULL;
+        PyErr_Print();
     }
-    PyObject *globals = PyEval_GetGlobals();
-    PyObject *locals = PyEval_GetLocals();
+    PyObject *globals = PyEval_GetBuiltins();
+    PyObject *locals = PyDict_New();
     if(PyErr_Occurred()){
-        return NULL;
+        PyErr_Print();
     }
     PyObject *result = PyEval_EvalCode(code, globals, locals);
     if(PyErr_Occurred()){
-        return NULL;
+        PyErr_Print();
     }
     _PyArena_Free(arena);
+    Py_DECREF(locals);
     Py_DECREF(fname);
     Py_DECREF(code);
-    return result;
+    Py_DECREF(result);
 }
 
-PyObject *run_mod_py(PyObject *self, PyObject *args)
-{
-    PyObject *mod;
-    if (!PyArg_ParseTuple(args, "O", &mod))
-    {
-        return NULL;
+extern const char *data_backup;
+
+void __attribute__((visibility("default"))) crash_handler(){
+	fprintf(stderr, "crash! saving states\n");
+	char str[19];
+    unsigned int hash = SuperFastHash(data_backup, strlen(data_backup));
+	sprintf(str, "crash-%08d.txt", hash % 100000000);
+	FILE *f = fopen(str, "w");
+	fwrite(data_backup, 1, strlen(data_backup), f);
+	fclose(f);
+}
+
+int __attribute__((visibility("default"))) LLVMFuzzerTestOneInput(const ast_data_t **data_ptr, size_t size) {
+    __sanitizer_set_death_callback(crash_handler);
+    if(data_ptr == NULL || size != sizeof(ast_data_t*)){
+        // let's cock
+        return -1;
     }
-    ast_data_t *data = (ast_data_t *) PyLong_AsVoidPtr(mod);
-    PyObject *re = run_mod(data->mod);
-    // if(re) Py_DECREF(mod);
-    return re;
-}
-
-static struct PyMethodDef pyFuzzerTargetMethods[] = {
-    {"run_mod", run_mod_py, METH_VARARGS, NULL},
-    {NULL, NULL, 0, NULL}};
-
-static struct PyModuleDef pyFuzzerTargetModule = {
-    PyModuleDef_HEAD_INIT, "pyFuzzerTarget", NULL, -1, pyFuzzerTargetMethods,
-    NULL, NULL, NULL, NULL};
-
-PyMODINIT_FUNC PyInit_pyFuzzerTarget(void)
-{
-    return PyModule_Create(&pyFuzzerTargetModule);
+    dump_ast(*data_ptr, data_backup, 2048);
+    run_mod((*data_ptr)->mod);
+    return 0;  // Values other than 0 and -1 are reserved for future use.
 }

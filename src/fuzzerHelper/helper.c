@@ -1,47 +1,44 @@
 #include "helper.h"
-#include "marshal.h"
 
-PyObject *get_dummy_ast(PyObject *self, PyObject *args) {
-	ast_data_t *data = (ast_data_t *)PyMem_Calloc(sizeof(ast_data_t), 1);
-	data->arena = _PyArena_New();
-	data->mod = init_dummy_ast(data->arena);
-	return ptr2addr(data);
+void get_dummy_ast(ast_data_t **data_ptr)
+{
+	*data_ptr = (ast_data_t *)PyMem_Calloc(sizeof(ast_data_t), 1);
+	(*data_ptr)->arena = _PyArena_New();
+	(*data_ptr)->mod = init_dummy_ast((*data_ptr)->arena);
 }
 
-PyObject *get_UAF2_ast(PyObject *self, PyObject *args) {
-	ast_data_t *data = (ast_data_t *)PyMem_Calloc(sizeof(ast_data_t), 1);
-	data->arena = _PyArena_New();
-	data->mod = init_UAF2(data->arena);
-	return ptr2addr(data);
+void get_UAF2_ast(ast_data_t **data_ptr)
+{
+	*data_ptr = (ast_data_t *)PyMem_Calloc(sizeof(ast_data_t), 1);
+	(*data_ptr)->arena = _PyArena_New();
+	(*data_ptr)->mod = init_UAF2((*data_ptr)->arena);
 }
 
-PyObject *free_ast(PyObject *self, PyObject *args) {
-	PyObject *addr;
-	if (!PyArg_ParseTuple(args, "O", &addr))
+void free_ast(ast_data_t **data_ptr)
+{
+	_PyArena_Free((*data_ptr)->arena);
+	PyMem_Free(*data_ptr);
+	*data_ptr = NULL;
+}
+
+const char *data_backup;
+
+size_t __attribute__((visibility("default"))) LLVMFuzzerCustomMutator(ast_data_t **data, size_t size, size_t max_size, unsigned int seed)
+{
+	if (data == NULL || *data == NULL || size != sizeof(ast_data_t *))
 	{
-		PyErr_SetString(PyExc_TypeError, "Invalid argument of free_ast");
-		return NULL;
+		get_dummy_ast(data);
 	}
-	ast_data_t *data = (ast_data_t *)PyLong_AsVoidPtr(addr);
-	_PyArena_Free(data->arena);
-	PyMem_Free(data);
-	// Py_DECREF(addr);
-	Py_RETURN_NONE;
+	else
+	{
+		free_ast(data);
+		get_UAF2_ast(data);
+	}
+	return sizeof(ast_data_t *);
 }
 
-static struct PyMethodDef pyFuzzerHelperMethods[] = {
-	{"get_dummy_ast", get_dummy_ast, METH_NOARGS, "Get dummy AST"},
-	{"get_UAF2_ast", get_UAF2_ast, METH_NOARGS, "get UAF2 in motivated samples"},
-	{"dump_ast", dump_ast, METH_VARARGS, "Dump AST"},
-	{"free_ast", free_ast, METH_VARARGS, "Free AST"},
-	{NULL, NULL, 0, NULL}
-};
-
-static struct PyModuleDef pyFuzzerHelperModule = {
-	PyModuleDef_HEAD_INIT, "pyFuzzerHelper", NULL, -1, pyFuzzerHelperMethods,
-	NULL, NULL, NULL, NULL
-};
-
-PyMODINIT_FUNC PyInit_pyFuzzerHelper(void) {
-	return PyModule_Create(&pyFuzzerHelperModule);
+int __attribute__((visibility("default"))) LLVMFuzzerInitialize(int *argc, char ***argv) {
+	data_backup = (const char *)calloc(2048, 1);
+    Py_Initialize();
+    return 0;
 }

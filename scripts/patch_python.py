@@ -1,6 +1,8 @@
 import pathlib
 import re
 
+# --- start export extra functions ---
+
 symbols = [
     r"^_PyAST_(.*?)",
     r"^_Py_asdl_(.*?)",
@@ -49,3 +51,39 @@ for header in PYTHON_INCLUDE.rglob("*.h"):
         with open(header, "w", encoding="utf8") as f:
             f.writelines(content)
             print("patching ", header)
+
+# --- start patching makefile.pre.in ---
+instrument_dirs = [
+    "Objects"
+]
+
+with_libfuzzer = """OUT_NAME:
+	$(CC) -c $(PY_CORE_CFLAGS) -fsanitize=fuzzer-no-link -o $@ $(srcdir)/IN_NAME
+
+"""
+
+patches = []
+
+for d in instrument_dirs:
+    d = PYTHON_PATH / d
+    assert(d.exists())
+    for file in d.rglob("*.c"):
+        file_path = file.relative_to(PYTHON_PATH).as_posix().removesuffix(".c")
+        patches.append(with_libfuzzer.replace("IN_NAME", file_path + ".c").replace("OUT_NAME", file_path + ".o"))
+        print("instrument", file_path)
+
+patches += [""]
+
+content = [
+    "CFLAGS:=-fsanitize=address $(CFLAGS)\n",
+    "LDFLAGS:=-lstdc++ -fsanitize=address,fuzzer-no-link $(LDFLAGS)\n"
+           ]
+with open(PYTHON_PATH / "Makefile.pre.in", "r", encoding="utf8") as f:
+    f_content = f.readlines()
+    l = f_content.index(".c.o:\n")
+    content += f_content[:l]
+    content += patches
+    content += f_content[l:]
+
+with open(PYTHON_PATH / "Makefile.pre.in", "w", encoding="utf8") as f:
+    f.writelines(content)

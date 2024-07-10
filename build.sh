@@ -13,9 +13,10 @@ CPYTHON_VERSION=3.11.9
 ATHERIS_VERSION=2.3.0
 ATHERIS_PATH=$(readlink -f ./atheris)
 CPYTHON_PATH=$(readlink -f ./cpython)
+CPYTHON_BUILD_PATH=$(readlink -f ./cpython_build)
+CPYTHON_BIN_PATH=$(readlink -f ./cpython_bin)
 BUILD_PATH=$(readlink -f build)
 SRC_PATH=$(readlink -f ./src)
-PATCHED_PATH=$(readlink -f ./patched_libs)
 USING_CORE=7
 
 FORCE_MODE=0
@@ -33,7 +34,7 @@ while [ "$1" != "" ]; do
         -j | --jobs )           shift
                                 USING_CORE=$1
                                 ;;
-        --clean )               rm -rf $ATHERIS_PATH $BUILD_PATH $CPYTHON_PATH
+        --clean )               rm -rf $ATHERIS_PATH $BUILD_PATH $CPYTHON_PATH $CPYTHON_BUILD_PATH $CPYTHON_BIN_PATH
                                 exit
                                 ;;
         * )                     echo "Invalid argument $1"
@@ -79,21 +80,32 @@ else
     python $SCRIPT_DIR/patch_python.py
 
     cd $WORK_DIR
+    if [ -d $CPYTHON_BUILD_PATH ]; then
+        rm -rf $CPYTHON_BUILD_PATH
+    fi
 
-    echo -e "${GREEN}[INFO] building Atheris$NC"
-    nix-shell --pure --command "echo -e '${GREEN}[INFO] finished building Atheris and CPython$NC'" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
+    if [ -d $CPYTHON_BIN_PATH ]; then
+        rm -rf $CPYTHON_BIN_PATH
+    fi
+
+    echo -e "${GREEN}[INFO] building CPython$NC"
+    mkdir -p $CPYTHON_BUILD_PATH
+    mkdir -p $CPYTHON_BIN_PATH
+    cd $CPYTHON_BUILD_PATH
+    nix-shell --pure --command "$CPYTHON_PATH/configure --enable-shared --prefix=\"$CPYTHON_BIN_PATH\"" $SCRIPT_DIR/cpython.nix
+    nix-shell --pure --command "make altinstall -j$USING_CORE" $SCRIPT_DIR/cpython.nix
 fi
 
 echo -e "${GREEN}[INFO] building pyFuzzer$NC"
 mkdir -p $BUILD_PATH
 cd $BUILD_PATH
-nix-shell --pure --command "cmake $SRC_PATH" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
-nix-shell --pure --command "make -j$USING_CORE" $SCRIPT_DIR/cpython.nix --argstr py_ver_str $CPYTHON_VERSION
+nix-shell --pure --command "PYTHON_PATH=$CPYTHON_BIN_PATH cmake $SRC_PATH" $SCRIPT_DIR/cpython.nix
+nix-shell --pure --command "make -j$USING_CORE" $SCRIPT_DIR/cpython.nix
 
 cd $WORK_DIR
-echo -e "${GREEN}[INFO] patching output ELF files for Atheris$NC"
-# check https://github.com/google/atheris/issues/54
-$SCRIPT_DIR/patched_all_elf.sh
+# echo -e "${GREEN}[INFO] patching output ELF files for Atheris$NC"
+# # check https://github.com/google/atheris/issues/54
+# $SCRIPT_DIR/patched_all_elf.sh
 
 
 echo -e "${GREEN}[INFO] finished building pyFuzzer$NC"

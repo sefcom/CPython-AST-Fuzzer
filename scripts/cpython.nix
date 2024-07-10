@@ -29,24 +29,21 @@ let
       })
     ];
   };
-  python_custom_plain = import ./plain_python.nix pkgs py_ver_str;
-  python_pkgs = import ./python_pkgs.nix pkgs;
-  llvm_pkgs = (import ./llvm_pkgs.nix pkgs).pkg_list;
-  python_custom = python_custom_plain.withPackages (ps: with ps; (python_pkgs ps));
-
 in
 pkgs.mkShell {
-  packages = llvm_pkgs ++ [
+  stdenv= pkgs.ccacheStdenv;
+  packages = [
     pkgs.cmake
-    python_custom_plain # try to fix
-    # python_custom # don't insert to path
+    pkgs.clang_18
+    pkgs.llvm_18
+    pkgs.lld_18
+    pkgs.llvmPackages_18.compiler-rt-libc
+    pkgs.ccache
   ];
   shellHook = ''
     export ASAN_OPTIONS='detect_leaks=0';
     export CC="${pkgs.clang_18}/bin/clang";
     export CXX="${pkgs.clang_18}/bin/clang++";
-    export LDSHARED="${pkgs.clang_18}/bin/clang -shared";
-    export PYTHON_PATH="${python_custom_plain}";
-    export PYTHON_PKGS_PATH=${python_custom}/lib/python3.11/site-packages;
+    export LIBCLANG_RT_PATH="${pkgs.llvmPackages_18.compiler-rt-libc}/lib/linux";
   '';
 }

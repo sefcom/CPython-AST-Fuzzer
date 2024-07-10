@@ -4,13 +4,15 @@ set(CMAKE_C_STANDARD 17)
 
 add_library(pyFuzzer_common INTERFACE)
 
+message(STATUS "PYTHON_PATH: $ENV{PYTHON_PATH}")
+
 target_include_directories(pyFuzzer_common INTERFACE
     $ENV{PYTHON_PATH}/include/python3.11
     $ENV{PYTHON_PATH}/include/python3.11/internal # idk why Python3_INCLUDE_DIR is empty and Python3_INCLUDE_DIRS only contain one path
 )
 # -O3 -march=native
-target_compile_options(pyFuzzer_common INTERFACE -fsanitize=address,fuzzer-no-link)
-target_link_options(pyFuzzer_common INTERFACE -fsanitize=address,fuzzer-no-link)
+target_compile_options(pyFuzzer_common INTERFACE -fsanitize=address,fuzzer -O3 -march=native)
+target_link_options(pyFuzzer_common INTERFACE -fsanitize=address,fuzzer)
 
 message(STATUS "PYTHON_PATH: $ENV{PYTHON_PATH}")
 target_link_libraries(pyFuzzer_common INTERFACE $ENV{PYTHON_PATH}/lib/libpython3.11.so)
@@ -18,21 +20,13 @@ target_link_libraries(pyFuzzer_common INTERFACE $ENV{PYTHON_PATH}/lib/libpython3
 # -- pyFuzzerHelper -- 
 # mutators, utils and ast helpers etc
 
-file(GLOB HELPER_SRC_FILES
+file(GLOB SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/utils/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/mutators/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/*.c
-)
-
-add_library(pyFuzzerHelper SHARED ${HELPER_SRC_FILES})
-target_link_libraries(pyFuzzerHelper PRIVATE pyFuzzer_common)
-set_target_properties(pyFuzzerHelper PROPERTIES PREFIX "" SUFFIX ".so")
-
-# -- pyFuzzerTarget --
-file(GLOB TARGET_SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerTarget/*.c
 )
 
-add_library(pyFuzzerTarget SHARED ${TARGET_SRC_FILES})
-target_link_libraries(pyFuzzerTarget PRIVATE pyFuzzer_common)
-set_target_properties(pyFuzzerTarget PROPERTIES PREFIX "" SUFFIX ".so")
+add_executable(pyFuzzerHelper ${SRC_FILES})
+target_link_libraries(pyFuzzerHelper PRIVATE pyFuzzer_common)
+set_target_properties(pyFuzzerHelper PROPERTIES PREFIX "" SUFFIX "")
