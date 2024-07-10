@@ -36,9 +36,3 @@ size_t __attribute__((visibility("default"))) LLVMFuzzerCustomMutator(ast_data_t
 	}
 	return sizeof(ast_data_t *);
 }
-
-int __attribute__((visibility("default"))) LLVMFuzzerInitialize(int *argc, char ***argv) {
-	data_backup = (const char *)calloc(2048, 1);
-    Py_Initialize();
-    return 0;
-}

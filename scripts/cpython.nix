@@ -44,6 +44,7 @@ pkgs.mkShell {
     export ASAN_OPTIONS='detect_leaks=0';
     export CC="${pkgs.clang_18}/bin/clang";
     export CXX="${pkgs.clang_18}/bin/clang++";
+    export CLANG_BIN="${pkgs.clang_18}/bin/clang";
     export LIBCLANG_RT_PATH="${pkgs.llvmPackages_18.compiler-rt-libc}/lib/linux";
   '';
 }

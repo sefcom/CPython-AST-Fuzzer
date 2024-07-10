@@ -62,6 +62,9 @@ mod_ty init_UAF2(PyArena *arena)
         _Py_asdl_stmt_seq_new(1, arena), // body
         _Py_asdl_expr_seq_new(0, arena),
         NULL,
+        #if PYTHON_VER == 313
+        NULL,
+        #endif
         NULL,
         LINE,
         arena);
@@ -73,6 +76,9 @@ mod_ty init_UAF2(PyArena *arena)
         _Py_asdl_keyword_seq_new(0, arena),
         _Py_asdl_stmt_seq_new(1, arena), // body
         _Py_asdl_expr_seq_new(0, arena),
+        #if PYTHON_VER == 313
+        NULL,
+        #endif
         LINE,
         arena);
     class_def->v.ClassDef.body->elements[0] = malicious_eq_func;

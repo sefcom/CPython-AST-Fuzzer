@@ -50,6 +50,12 @@ void __attribute__((visibility("default"))) crash_handler(){
 	fclose(f);
 }
 
+int __attribute__((visibility("default"))) LLVMFuzzerInitialize(int *argc, char ***argv) {
+	data_backup = (const char *)calloc(2048, 1);
+    Py_Initialize();
+    return 1;
+}
+
 int __attribute__((visibility("default"))) LLVMFuzzerTestOneInput(const ast_data_t **data_ptr, size_t size) {
     __sanitizer_set_death_callback(crash_handler);
     if(data_ptr == NULL || size != sizeof(ast_data_t*)){

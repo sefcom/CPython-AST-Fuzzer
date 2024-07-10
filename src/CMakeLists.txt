@@ -6,16 +6,20 @@ add_library(pyFuzzer_common INTERFACE)
 
 message(STATUS "PYTHON_PATH: $ENV{PYTHON_PATH}")
 
+SET(CPYTHON_VER "3.13")
+SET(PYTHON_VER 313)
+
 target_include_directories(pyFuzzer_common INTERFACE
-    $ENV{PYTHON_PATH}/include/python3.11
-    $ENV{PYTHON_PATH}/include/python3.11/internal # idk why Python3_INCLUDE_DIR is empty and Python3_INCLUDE_DIRS only contain one path
+    $ENV{PYTHON_PATH}/include/python${CPYTHON_VER}
+    $ENV{PYTHON_PATH}/include/python${CPYTHON_VER}/internal # idk why Python3_INCLUDE_DIR is empty and Python3_INCLUDE_DIRS only contain one path
 )
 # -O3 -march=native
+target_compile_definitions(pyFuzzer_common INTERFACE PYTHON_VER=${PYTHON_VER})
 target_compile_options(pyFuzzer_common INTERFACE -fsanitize=address,fuzzer -O3 -march=native)
 target_link_options(pyFuzzer_common INTERFACE -fsanitize=address,fuzzer)
 
 message(STATUS "PYTHON_PATH: $ENV{PYTHON_PATH}")
-target_link_libraries(pyFuzzer_common INTERFACE $ENV{PYTHON_PATH}/lib/libpython3.11.so)
+target_link_libraries(pyFuzzer_common INTERFACE $ENV{PYTHON_PATH}/lib/libpython${CPYTHON_VER}.so)
 
 # -- pyFuzzerHelper -- 
 # mutators, utils and ast helpers etc

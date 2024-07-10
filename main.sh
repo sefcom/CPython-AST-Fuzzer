@@ -14,7 +14,18 @@ popd() {
 }
 
 BUILD_PATH=$(readlink -f ./build)
-LOG_PATH=$(readlink -f .)/log$(date +"%H%M%S")
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -c | --clean )  echo "cleaning up logs"
+                        rm -rf $(readlink -f .)/log*
+                        exit 0
+                        ;;
+    esac
+    shift
+done
+
+LOG_PATH=$(readlink -f .)/log$(date +"%m%d%H%M%S")
 
 mkdir -p $LOG_PATH
 

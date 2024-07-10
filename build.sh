@@ -9,7 +9,7 @@ WORK_DIR=$(readlink -f .)
 SCRIPT_DIR=$(readlink -f ./scripts)
 cd $WORK_DIR
 
-CPYTHON_VERSION=3.11.9
+CPYTHON_VERSION=3.13.0b3
 ATHERIS_VERSION=2.3.0
 ATHERIS_PATH=$(readlink -f ./atheris)
 CPYTHON_PATH=$(readlink -f ./cpython)
@@ -44,14 +44,14 @@ while [ "$1" != "" ]; do
     shift
 done
 
-if [ -d $ATHERIS_PATH ]; then
-    echo -e "[WARN] using cached atheris"
-else
-    echo -e "[INFO] cloning atheris into $ATHERIS_PATH"
-    git clone --quiet --depth=1 --branch=$ATHERIS_VERSION https://github.com/google/atheris.git $ATHERIS_PATH
-    FORCE_MODE=1
-    cd $WORK_DIR
-fi
+# if [ -d $ATHERIS_PATH ]; then
+#     echo -e "[WARN] using cached atheris"
+# else
+#     echo -e "[INFO] cloning atheris into $ATHERIS_PATH"
+#     git clone --quiet --depth=1 --branch=$ATHERIS_VERSION https://github.com/google/atheris.git $ATHERIS_PATH
+#     FORCE_MODE=1
+#     cd $WORK_DIR
+# fi
 
 if [ -d $CPYTHON_PATH ]; then
     echo -e "[WARN] using cached cpython"
@@ -66,13 +66,11 @@ if [ $FORCE_MODE -eq 0 ]; then
     echo -e "${GREEN}[INFO] skipping force building Atheris and CPython$NC"
 else
     echo -e "${GREEN}[INFO] building Atheris and CPython$NC"
-    cd $ATHERIS_PATH
-
-    # PATCHING
-    echo -e "${GREEN}[INFO] patching Atheris$NC"
-    cd $ATHERIS_PATH
-    git reset --hard HEAD
-    git apply $WORK_DIR/atheris-nix-bash.patch
+    # cd $ATHERIS_PATH
+    # echo -e "${GREEN}[INFO] patching Atheris$NC"
+    # cd $ATHERIS_PATH
+    # git reset --hard HEAD
+    # git apply $WORK_DIR/atheris-nix-bash.patch
 
     echo -e "${GREEN}[INFO] patching CPython$NC"
     cd $CPYTHON_PATH
@@ -97,6 +95,9 @@ else
 fi
 
 echo -e "${GREEN}[INFO] building pyFuzzer$NC"
+if [ -d $BUILD_PATH ]; then
+    rm -rf $BUILD_PATH
+fi
 mkdir -p $BUILD_PATH
 cd $BUILD_PATH
 nix-shell --pure --command "PYTHON_PATH=$CPYTHON_BIN_PATH cmake $SRC_PATH" $SCRIPT_DIR/cpython.nix
