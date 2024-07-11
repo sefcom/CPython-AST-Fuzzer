@@ -11,9 +11,11 @@ typedef struct
 } simple_item_t;
 
 // -- Arena helper --
+
 PyObject *PyUnicode_FromString_Arena(const char *s, PyArena *arena);
 PyObject *PyUnicode_Copy_Arena(PyObject *s, PyArena *arena);
 PyObject *PyLong_FromLong_Arena(long n, PyArena *arena);
+PyObject *PyLong_Copy_Arena(PyObject *s, PyArena *arena);
 
 // -- name helpers --
 
@@ -33,6 +35,7 @@ int plain_func(PyArena *arena, stmt_ty *expr, arguments_ty args);
 void func_w_name(PyArena *arena, PyObject *name, stmt_ty *expr, arguments_ty args);
 
 // -- mutator helper --
+
 int get_clz_count(asdl_stmt_seq *stmt_seq);
 stmt_ty get_clz(asdl_stmt_seq *stmt_seq, int index);
 

@@ -1,9 +1,9 @@
 #include "deepcopy.h"
 
-#define TRIAL_COPY(type)                                                                \
-    type##_ty type##_copy(type##_ty val, PyArena *arena)                                 \
-    {                                                                                   \
-        return val;                                                                     \
+#define TRIAL_COPY(type)                                 \
+    type##_ty type##_copy(type##_ty val, PyArena *arena) \
+    {                                                    \
+        return val;                                      \
     }
 TRIAL_COPY(boolop)
 TRIAL_COPY(operator)
@@ -15,15 +15,17 @@ identifier identifier_copy(identifier val, PyArena *arena)
 {
     return PyUnicode_Copy_Arena(val, arena);
 }
-PyObject *string_copy(PyObject *val, PyArena *arena){
+PyObject *string_copy(PyObject *val, PyArena *arena)
+{
     return PyUnicode_Copy_Arena(val, arena);
 }
 PyObject *constant_copy(PyObject *val, PyArena *arena)
 {
-    if(PyLong_CheckExact(val))
+    if (PyLong_CheckExact(val))
     {
-        return PyLong_FromLong_Arena(PyLong_AsLong(val), arena);
-    }else if(PyUnicode_CheckExact(val))
+        return PyLong_Copy_Arena(val, arena);
+    }
+    else if (PyUnicode_CheckExact(val))
     {
         return PyUnicode_Copy_Arena(val, arena);
     }
@@ -34,23 +36,31 @@ PyObject *constant_copy(PyObject *val, PyArena *arena)
 }
 
 #define ASDL_SEQ_COPY_COMBINED(type) \
-    ASDL_SEQ_COPY_ADD(type)           \
+    ASDL_SEQ_COPY_ADD(type)          \
     ASDL_SEQ_COPY(type)
 
-#define ASDL_SEQ_COPY_ADD(type)                                                                       \
+#define ASDL_SEQ_COPY_ADD(type)                                                                           \
     asdl_##type##_seq *asdl_##type##_seq##_copy_add(asdl_##type##_seq *seq, PyArena *arena, int add_size) \
-    {                                                                                                 \
-        asdl_##type##_seq *re = _Py_##asdl_##type##_seq##_new(seq->size + add_size, arena);           \
-        for (int i = 0; i < seq->size; i++)                                                           \
-        {                                                                                             \
-            re->typed_elements[i] = type##_copy(seq->typed_elements[i], arena);                       \
-        }                                                                                             \
-        return re;                                                                                    \
+    {                                                                                                     \
+        if (seq == NULL)                                                                                  \
+        {                                                                                                 \
+            asdl_##type##_seq *re = _Py_##asdl_##type##_seq##_new(add_size, arena);                       \
+        }                                                                                                 \
+        asdl_##type##_seq *re = _Py_##asdl_##type##_seq##_new(seq->size + add_size, arena);               \
+        for (int i = 0; i < seq->size; i++)                                                               \
+        {                                                                                                 \
+            re->typed_elements[i] = type##_copy(seq->typed_elements[i], arena);                           \
+        }                                                                                                 \
+        return re;                                                                                        \
     }
 
 #define ASDL_SEQ_COPY(type)                                                             \
     asdl_##type##_seq *asdl_##type##_seq##_copy(asdl_##type##_seq *seq, PyArena *arena) \
     {                                                                                   \
+        if (seq == NULL)                                                                \
+        {                                                                               \
+            return NULL;                                                                \
+        }                                                                               \
         asdl_##type##_seq *re = _Py_##asdl_##type##_seq##_new(seq->size, arena);        \
         for (int i = 0; i < seq->size; i++)                                             \
         {                                                                               \
@@ -62,7 +72,8 @@ PyObject *constant_copy(PyObject *val, PyArena *arena)
 ASDL_SEQ_COPY_COMBINED(expr)
 ASDL_SEQ_COPY_COMBINED(stmt)
 ASDL_SEQ_COPY_COMBINED(keyword)
-asdl_int_seq *asdl_int_seq_copy(asdl_int_seq *seq, PyArena *arena){
+asdl_int_seq *asdl_int_seq_copy(asdl_int_seq *seq, PyArena *arena)
+{
     asdl_int_seq *re = _Py_asdl_int_seq_new(seq->size, arena);
     for (int i = 0; i < seq->size; i++)
     {
@@ -70,7 +81,8 @@ asdl_int_seq *asdl_int_seq_copy(asdl_int_seq *seq, PyArena *arena){
     }
     return re;
 }
-asdl_int_seq *asdl_int_seq_copy_add(asdl_int_seq *seq, PyArena *arena, int add_size){
+asdl_int_seq *asdl_int_seq_copy_add(asdl_int_seq *seq, PyArena *arena, int add_size)
+{
     asdl_int_seq *re = _Py_asdl_int_seq_new(seq->size + add_size, arena);
     for (int i = 0; i < seq->size; i++)
     {

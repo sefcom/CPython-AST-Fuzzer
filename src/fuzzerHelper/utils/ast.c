@@ -10,9 +10,26 @@ PyObject *PyUnicode_FromString_Arena(const char *s, PyArena *arena)
     return re;
 }
 
+PyObject *PyLong_Copy_Arena(PyObject *s, PyArena *arena)
+{
+    if(s == NULL){
+        return NULL;
+    }
+    PyObject *re = (PyObject *)PyLong_FromLongLong(PyLong_AsLongLong(s));
+    _PyArena_AddPyObject(arena, re);
+    // check obj2ast_constant from CPython source code
+    Py_INCREF(re);
+    return re;
+}
+
 PyObject *PyUnicode_Copy_Arena(PyObject *s, PyArena *arena)
 {
-    PyObject *re = (PyObject *)PyUnicode_FromObject(s);
+    if(s == NULL){
+        return NULL;
+    }
+    Py_ssize_t length = PyUnicode_GET_LENGTH(s);
+    PyObject *re = (PyObject *)PyUnicode_New(length, PyUnicode_MAX_CHAR_VALUE(s));
+    memcpy(PyUnicode_DATA(re), PyUnicode_DATA(s), length * PyUnicode_KIND(s)); // from _PyUnicode_Copy but no checks
     _PyArena_AddPyObject(arena, re);
     // check obj2ast_constant from CPython source code
     Py_INCREF(re);

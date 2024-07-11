@@ -15,31 +15,31 @@ We believe that there are many and comprehensive unit tests for every individual
                                                         |
                                                         |
                                                         \/
-                                                Classes definitions
+                                  builtin classes/functions definitions
                                                         |
                                                         |
                                                         |
-   (possibly officially provided)                       \/
-        syntax grammar tree                     language features
-                |                                       |
-                |                                       |
-                -----------------------------------------
-                                |
-                                |
-                                |
-                                \/
-                AST based mutations --------> arguments based mutations
-                                |                           |
-                                |                           |
-                                |----------------------------
-                                |
-                                \/
-                        Atheris w/ ASAN enabled
-                                |
-                                |
-                                |
-                                \/
-                        `run_mod` run python AST directly
+   (possibly officially provided)                       \/                     libFuzzer instrument builtin codes
+        syntax grammar tree                     language features               Atheris instrument pure Python codes
+                |                                       |                                  |
+                |                                       |                                  |
+                ----------------------------------------------------------------------------
+                                                        |
+                                                        |
+                                                        |
+                                                        \/
+                                        AST based mutations --------> arguments based mutations
+                                                        |                           |
+                                                        |                           |
+                                                        |----------------------------
+                                                        |
+                                                        \/
+                                                libFuzzer w/ ASAN enabled
+                                                        |
+                                                        |
+                                                        |
+                                                        \/
+                                                `run_mod` run python AST directly
 
 </pre>
 ## Terminology
@@ -66,7 +66,7 @@ Definitions for "language features" and examples:
 AST, because we don't need that many information in CST, like whitespace or etc.
 
 ## Mutation methods
-- CST(concrete syntax tree) mutators
+- AST mutators
   - add life-time declaration into variables
   - add overload functions in class definition and add calling later
   - create basic/standard types instances to variables

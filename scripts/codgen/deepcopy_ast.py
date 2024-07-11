@@ -51,6 +51,7 @@ def gen_targets(codes: list[str], target: str):
     template = """%s_ty %s_copy(%s_ty val, PyArena *arena)
 {
     %s_ty re = _PyArena_Malloc(arena, sizeof(struct _%s));
+    re->kind = val->kind;
     switch (val->kind) {
     BODY
     }

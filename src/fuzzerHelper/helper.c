@@ -3,15 +3,17 @@
 
 void get_dummy_ast(ast_data_t **data_ptr)
 {
-	*data_ptr = (ast_data_t *)PyMem_Calloc(sizeof(ast_data_t), 1);
-	(*data_ptr)->arena = _PyArena_New();
+	PyArena *arena = _PyArena_New();
+	*data_ptr = (ast_data_t *)_PyArena_Malloc(arena, sizeof(ast_data_t));
+	(*data_ptr)->arena = arena;
 	(*data_ptr)->mod = init_dummy_ast((*data_ptr)->arena);
 }
 
 void get_UAF2_ast(ast_data_t **data_ptr)
 {
-	*data_ptr = (ast_data_t *)PyMem_Calloc(sizeof(ast_data_t), 1);
-	(*data_ptr)->arena = _PyArena_New();
+	PyArena *arena = _PyArena_New();
+	*data_ptr = (ast_data_t *)_PyArena_Malloc(arena, sizeof(ast_data_t));
+	(*data_ptr)->arena = arena;
 	(*data_ptr)->mod = init_UAF2((*data_ptr)->arena);
 }
 
