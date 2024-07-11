@@ -95,6 +95,10 @@ else
 fi
 
 echo -e "${GREEN}[INFO] building pyFuzzer$NC"
+
+# -- codegen --
+python $SCRIPT_DIR/codgen/deepcopy_ast.py $(readlink -f $CPYTHON_BIN_PATH/include/python3.*/internal/pycore_ast.h) $SRC_PATH/deepcopy_ast/deepcopy_gen
+
 if [ -d $BUILD_PATH ]; then
     rm -rf $BUILD_PATH
 fi

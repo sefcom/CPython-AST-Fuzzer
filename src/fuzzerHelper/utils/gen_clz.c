@@ -6,7 +6,7 @@ int plain_clz(PyArena *arena, stmt_ty *stmt){
     int id;
     *stmt = _PyAST_ClassDef(
         gen_name(0, &id),
-        get_asdl_expr_seq(0, arena),
+        _Py_asdl_expr_seq_new(0, arena),
         NULL,
         NULL,
         NULL,
@@ -22,7 +22,7 @@ int clz_inherited(PyArena *arena, const char *base, stmt_ty *stmt){
     int id;
     *stmt = _PyAST_ClassDef(
         gen_name(0, &id),
-        get_asdl_expr_seq(1, arena),
+        _Py_asdl_expr_seq_new(1, arena),
         NULL,
         NULL,
         NULL,

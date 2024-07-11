@@ -1,4 +1,5 @@
 #include "helper.h"
+#include "mutators/mutators.h"
 
 void get_dummy_ast(ast_data_t **data_ptr)
 {
@@ -27,12 +28,14 @@ size_t __attribute__((visibility("default"))) LLVMFuzzerCustomMutator(ast_data_t
 {
 	if (data == NULL || *data == NULL || size != sizeof(ast_data_t *))
 	{
+		printf("retrieving dummy ast, size=%d\n", size);
 		get_dummy_ast(data);
 	}
 	else
 	{
-		free_ast(data);
-		get_UAF2_ast(data);
+		// free_ast(data);
+		// get_UAF2_ast(data);
+		entry_mutate(data, max_size, seed);
 	}
 	return sizeof(ast_data_t *);
 }
@@ -43,5 +46,5 @@ int __attribute__((visibility("default"))) LLVMFuzzerInitialize(int *argc, char 
     Py_Initialize();
 	gen_name_init();
 	override_name_init();
-    return 1;
+    return 0;
 }
