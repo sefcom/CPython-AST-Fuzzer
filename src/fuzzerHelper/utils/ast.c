@@ -47,7 +47,8 @@ PyObject *gen_name_id(int id)
     return names[id];
 }
 
-void gen_name_init(){
+void gen_name_init()
+{
     names = (PyObject **)malloc(50 * sizeof(PyObject *));
     char name[10];
     for (int i = 0; i < 50; i++)
@@ -107,7 +108,100 @@ PyObject *override_name(const char *name)
     return NULL;
 }
 
+static PyObject **types = NULL;
+
+void type_init()
+{
+    // int, float, complex, bool, list, tuple, range, str, bytes, bytearray, memoryview, set, frozenset, dict
+    types = (PyObject **)malloc(10 * sizeof(PyObject *));
+    types[0] = PyUnicode_FromString("int");
+    types[1] = PyUnicode_FromString("float");
+    types[2] = PyUnicode_FromString("str");
+    types[3] = PyUnicode_FromString("list");
+    types[4] = PyUnicode_FromString("tuple");
+    types[5] = PyUnicode_FromString("dict");
+    types[6] = PyUnicode_FromString("set");
+    types[7] = PyUnicode_FromString("frozenset");
+    types[8] = PyUnicode_FromString("bytes");
+    types[9] = PyUnicode_FromString("bytearray");
+}
+
 stmt_ty stmt(expr_ty expr, PyArena *arena)
 {
     return _PyAST_Expr(expr, LINE, arena);
 }
+
+int get_clz_count(asdl_stmt_seq *stmt_seq)
+{
+    int cnt = 0;
+    for (int i = 0; i < stmt_seq->size; i++)
+    {
+        if (stmt_seq->typed_elements[i]->kind == ClassDef_kind)
+        {
+            cnt++;
+        }
+    }
+    return cnt;
+}
+
+stmt_ty get_clz(asdl_stmt_seq *stmt_seq, int index)
+{
+    int cnt = 0;
+    for (int i = 0; i < stmt_seq->size; i++)
+    {
+        if (stmt_seq->typed_elements[i]->kind == ClassDef_kind)
+        {
+            if (cnt == index)
+            {
+                return stmt_seq->typed_elements[i];
+            }
+            cnt++;
+        }
+    }
+    return NULL;
+}
+
+static asdl_expr_seq **freed_asdl_seq = NULL;
+
+void freed_asdl_seq_init()
+{
+    freed_asdl_seq = (asdl_expr_seq **)calloc(sizeof(asdl_expr_seq *), FREED_ASL_SEQ_SIZE);
+}
+
+#define ASDL_SEQ_GETTER(type)                        \
+    type *get_##type(int size, PyArena *arena)       \
+    {                                                \
+        if (freed_asdl_seq[size] == NULL)            \
+        {                                            \
+            return _Py_##type##_new(size, arena);    \
+        }                                            \
+        else                                         \
+        {                                            \
+            type *re = (type *)freed_asdl_seq[size]; \
+            freed_asdl_seq[size] = NULL;             \
+            return re;                               \
+        }                                            \
+    }
+ASDL_SEQ_GETTER(asdl_expr_seq)
+ASDL_SEQ_GETTER(asdl_stmt_seq)
+ASDL_SEQ_GETTER(asdl_keyword_seq)
+ASDL_SEQ_GETTER(asdl_int_seq)
+ASDL_SEQ_GETTER(asdl_arg_seq)
+
+#define ASDL_SEQ_COPY(type)                                       \
+    type *type##_copy(type *seq, PyArena *arena, int add_size)    \
+    {                                                             \
+        type *re = get_##type(seq->size + add_size, arena); \
+        for (int i = 0; i < seq->size; i++)                       \
+        {                                                         \
+            re->typed_elements[i] = seq->typed_elements[i];       \
+        }                                                         \
+        freed_asdl_seq[seq->size] = (asdl_expr_seq *)seq;         \
+        return re;                                                \
+    }
+
+ASDL_SEQ_COPY(asdl_expr_seq)
+ASDL_SEQ_COPY(asdl_stmt_seq)
+ASDL_SEQ_COPY(asdl_keyword_seq)
+ASDL_SEQ_COPY(asdl_int_seq)
+ASDL_SEQ_COPY(asdl_arg_seq)

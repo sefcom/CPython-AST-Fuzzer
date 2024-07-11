@@ -10,5 +10,6 @@
 #define GEN_ITEM(n) (simple_item_t){SuperFastHash(n, strlen(n)), PyUnicode_FromString(n)}
 
 #define MAX_DEPTH 5
+#define FREED_ASL_SEQ_SIZE 20
 
 #endif
