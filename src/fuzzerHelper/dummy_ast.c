@@ -56,31 +56,16 @@ mod_ty init_UAF2(PyArena *arena)
         Store,
         LINE,
         arena);
-    stmt_ty malicious_eq_func = _PyAST_FunctionDef(
-        PyUnicode_FromString_Arena("__eq__", arena),
-        args,
-        _Py_asdl_stmt_seq_new(1, arena), // body
-        _Py_asdl_expr_seq_new(0, arena),
-        NULL,
-        #if PYTHON_VER == 313
-        NULL,
-        #endif
-        NULL,
-        LINE,
-        arena);
+
+    stmt_ty malicious_eq_func;
+    assert(override_name("__eq__") != NULL);
+    func_w_name(arena, override_name("__eq__"), &malicious_eq_func, args);
+    malicious_eq_func->v.FunctionDef.body = _Py_asdl_stmt_seq_new(1, arena);
     malicious_eq_func->v.FunctionDef.body->elements[0] = malicious_assign;
 
-    stmt_ty class_def = _PyAST_ClassDef(
-        PyUnicode_FromString_Arena("A", arena),
-        _Py_asdl_expr_seq_new(0, arena),
-        _Py_asdl_keyword_seq_new(0, arena),
-        _Py_asdl_stmt_seq_new(1, arena), // body
-        _Py_asdl_expr_seq_new(0, arena),
-        #if PYTHON_VER == 313
-        NULL,
-        #endif
-        LINE,
-        arena);
+    stmt_ty class_def;
+    int clz_name = plain_clz(arena, &class_def);
+    class_def->v.ClassDef.body = _Py_asdl_stmt_seq_new(1, arena);
     class_def->v.ClassDef.body->elements[0] = malicious_eq_func;
 
     expr_ty target_call = _PyAST_Compare(
@@ -96,7 +81,7 @@ mod_ty init_UAF2(PyArena *arena)
         arena);
     target_call->v.Compare.ops->typed_elements[0] = Eq;
     target_call->v.Compare.comparators->typed_elements[0] = _PyAST_Call(
-        _PyAST_Name(PyUnicode_FromString_Arena("A", arena), Load, LINE, arena),
+        _PyAST_Name(gen_name_id(clz_name), Load, LINE, arena),
         _Py_asdl_expr_seq_new(0, arena),
         _Py_asdl_keyword_seq_new(0, arena),
         LINE,

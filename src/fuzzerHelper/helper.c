@@ -21,7 +21,7 @@ void free_ast(ast_data_t **data_ptr)
 	*data_ptr = NULL;
 }
 
-const char *data_backup;
+global_info_t *data_backup;
 
 size_t __attribute__((visibility("default"))) LLVMFuzzerCustomMutator(ast_data_t **data, size_t size, size_t max_size, unsigned int seed)
 {
@@ -35,4 +35,13 @@ size_t __attribute__((visibility("default"))) LLVMFuzzerCustomMutator(ast_data_t
 		get_UAF2_ast(data);
 	}
 	return sizeof(ast_data_t *);
+}
+
+int __attribute__((visibility("default"))) LLVMFuzzerInitialize(int *argc, char ***argv) {
+	data_backup = (global_info_t *)malloc(sizeof(global_info_t));
+	data_backup->ast_dump = (const char *)calloc(AST_DUMP_BUF_SIZE, 1);
+    Py_Initialize();
+	gen_name_init();
+	override_name_init();
+    return 1;
 }

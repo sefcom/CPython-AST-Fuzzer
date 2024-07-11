@@ -100,7 +100,7 @@ if [ -d $BUILD_PATH ]; then
 fi
 mkdir -p $BUILD_PATH
 cd $BUILD_PATH
-nix-shell --pure --command "PYTHON_PATH=$CPYTHON_BIN_PATH cmake $SRC_PATH" $SCRIPT_DIR/cpython.nix
+nix-shell --pure --command "PYTHON_PATH=$CPYTHON_BIN_PATH cmake $SRC_PATH -DCMAKE_BUILD_TYPE=Debug" $SCRIPT_DIR/cpython.nix
 nix-shell --pure --command "make -j$USING_CORE" $SCRIPT_DIR/cpython.nix
 
 cd $WORK_DIR

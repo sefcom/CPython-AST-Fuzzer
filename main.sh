@@ -19,7 +19,6 @@ while [ "$1" != "" ]; do
     case $1 in
         -c | --clean )  echo "cleaning up logs"
                         rm -rf $(readlink -f .)/log*
-                        exit 0
                         ;;
     esac
     shift

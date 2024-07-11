@@ -10,10 +10,13 @@ SET(CPYTHON_VER "3.13")
 SET(PYTHON_VER 313)
 
 target_include_directories(pyFuzzer_common INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper
+    ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerTarget
+    ${CMAKE_CURRENT_SOURCE_DIR}/common
     $ENV{PYTHON_PATH}/include/python${CPYTHON_VER}
     $ENV{PYTHON_PATH}/include/python${CPYTHON_VER}/internal # idk why Python3_INCLUDE_DIR is empty and Python3_INCLUDE_DIRS only contain one path
 )
-# -O3 -march=native
+# with debug symbol
 target_compile_definitions(pyFuzzer_common INTERFACE PYTHON_VER=${PYTHON_VER})
 target_compile_options(pyFuzzer_common INTERFACE -fsanitize=address,fuzzer -O3 -march=native)
 target_link_options(pyFuzzer_common INTERFACE -fsanitize=address,fuzzer)
@@ -29,6 +32,7 @@ file(GLOB SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/mutators/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerTarget/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/common/*.c
 )
 
 add_executable(pyFuzzerHelper ${SRC_FILES})

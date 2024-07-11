@@ -38,22 +38,16 @@ void run_mod(const mod_ty mod)
     Py_DECREF(result);
 }
 
-extern const char *data_backup;
+extern global_info_t *data_backup;
 
 void __attribute__((visibility("default"))) crash_handler(){
 	fprintf(stderr, "crash! saving states\n");
 	char str[19];
-    unsigned int hash = SuperFastHash(data_backup, strlen(data_backup));
+    unsigned int hash = SuperFastHash(data_backup->ast_dump, strlen(data_backup->ast_dump));
 	sprintf(str, "crash-%08d.txt", hash % 100000000);
 	FILE *f = fopen(str, "w");
-	fwrite(data_backup, 1, strlen(data_backup), f);
+	fwrite(data_backup->ast_dump, 1, strlen(data_backup->ast_dump), f);
 	fclose(f);
-}
-
-int __attribute__((visibility("default"))) LLVMFuzzerInitialize(int *argc, char ***argv) {
-	data_backup = (const char *)calloc(2048, 1);
-    Py_Initialize();
-    return 1;
 }
 
 int __attribute__((visibility("default"))) LLVMFuzzerTestOneInput(const ast_data_t **data_ptr, size_t size) {
@@ -62,7 +56,7 @@ int __attribute__((visibility("default"))) LLVMFuzzerTestOneInput(const ast_data
         // let's cock
         return -1;
     }
-    dump_ast(*data_ptr, data_backup, 2048);
+    dump_ast(*data_ptr, data_backup->ast_dump, AST_DUMP_BUF_SIZE);
     run_mod((*data_ptr)->mod);
     return 0;  // Values other than 0 and -1 are reserved for future use.
 }
