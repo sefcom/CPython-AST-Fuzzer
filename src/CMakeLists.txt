@@ -14,7 +14,7 @@ target_include_directories(pyFuzzer_common INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/utils
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerTarget
     ${CMAKE_CURRENT_SOURCE_DIR}/common
-    ${CMAKE_CURRENT_SOURCE_DIR}/deepcopy_ast
+    ${CMAKE_CURRENT_SOURCE_DIR}/codgen
     $ENV{PYTHON_PATH}/include/python${CPYTHON_VER}
     $ENV{PYTHON_PATH}/include/python${CPYTHON_VER}/internal # idk why Python3_INCLUDE_DIR is empty and Python3_INCLUDE_DIRS only contain one path
 )
@@ -35,7 +35,8 @@ file(GLOB SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerHelper/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/fuzzerTarget/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/common/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/deepcopy_ast/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/common/hash.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/codgen/*.c
 )
 
 add_executable(pyFuzzerHelper ${SRC_FILES})

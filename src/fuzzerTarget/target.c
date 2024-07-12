@@ -43,7 +43,8 @@ extern global_info_t *data_backup;
 void __attribute__((visibility("default"))) crash_handler(){
 	fprintf(stderr, "crash! saving states\n");
 	char str[19];
-    unsigned int hash = SuperFastHash(data_backup->ast_dump, strlen(data_backup->ast_dump));
+    unsigned int hash;
+    HASH_VALUE(data_backup->ast_dump, strlen(data_backup->ast_dump), hash);
 	sprintf(str, "crash-%08d.txt", hash % 100000000);
 	FILE *f = fopen(str, "w");
 	fwrite(data_backup->ast_dump, 1, strlen(data_backup->ast_dump), f);

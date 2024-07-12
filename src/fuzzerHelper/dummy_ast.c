@@ -58,8 +58,8 @@ mod_ty init_UAF2(PyArena *arena)
         arena);
 
     stmt_ty malicious_eq_func;
-    assert(override_name("__eq__") != NULL);
-    func_w_name(arena, override_name("__eq__"), &malicious_eq_func, args);
+    assert(override_func("__eq__") != NULL);
+    func_w_name(arena, override_func("__eq__")->name, &malicious_eq_func, args);
     malicious_eq_func->v.FunctionDef.body = _Py_asdl_stmt_seq_new(1, arena);
     malicious_eq_func->v.FunctionDef.body->elements[0] = malicious_assign;
 

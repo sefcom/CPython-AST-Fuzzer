@@ -2,8 +2,7 @@
 #define COMMON_H
 
 #include <stdint.h>
-
-uint32_t SuperFastHash (const char * data, int len);
+#include "hash.h"
 
 #define Py_BUILD_CORE 1
 #include "Python.h"

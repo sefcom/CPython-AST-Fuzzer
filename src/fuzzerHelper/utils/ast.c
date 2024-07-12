@@ -55,7 +55,9 @@ PyObject *gen_name(int clear, int *id)
     {
         cnt = 0;
     }
-    *id = cnt;
+    if(id != NULL){
+        *id = cnt;
+    }
     return names[cnt++ % 50];
 }
 
@@ -75,105 +77,35 @@ void gen_name_init()
     }
 }
 
-static simple_item_t *overrides = NULL;
+extern overridable_func *overridable_funcs;
+extern overridable_func *overridable_funcs_raw; 
+extern int builtin_clz_start[];
+extern unsigned long builtin_clz_str[]; // hash list
+extern int builtin_type_cnt;
 
-void override_name_init()
+overridable_func *rand_override_func(const char *builtin_tp_name)
 {
-    // ['__new__', '__repr__', '__hash__', '__str__', '__getattribute__', '__setattr__', '__delattr__', '__lt__', '__le__', '__eq__', '__ne__', '__gt__', '__ge__', '__init__', '__reduce_ex__', '__reduce__', '__getstate__', '__subclasshook__', '__init_subclass__', '__format__', '__sizeof__', '__dir__', '__class__', '__doc__']
-    overrides = (simple_item_t *)malloc(24 * sizeof(simple_item_t));
-    overrides[0] = GEN_ITEM("__new__");
-    overrides[1] = GEN_ITEM("__repr__");
-    overrides[2] = GEN_ITEM("__hash__");
-    overrides[3] = GEN_ITEM("__str__");
-    overrides[4] = GEN_ITEM("__getattribute__");
-    overrides[5] = GEN_ITEM("__setattr__");
-    overrides[6] = GEN_ITEM("__delattr__");
-    overrides[7] = GEN_ITEM("__lt__");
-    overrides[8] = GEN_ITEM("__le__");
-    overrides[9] = GEN_ITEM("__eq__");
-    overrides[10] = GEN_ITEM("__ne__");
-    overrides[11] = GEN_ITEM("__gt__");
-    overrides[12] = GEN_ITEM("__ge__");
-    overrides[13] = GEN_ITEM("__init__");
-    overrides[14] = GEN_ITEM("__reduce_ex__");
-    overrides[15] = GEN_ITEM("__reduce__");
-    overrides[16] = GEN_ITEM("__getstate__");
-    overrides[17] = GEN_ITEM("__subclasshook__");
-    overrides[18] = GEN_ITEM("__init_subclass__");
-    overrides[19] = GEN_ITEM("__format__");
-    overrides[20] = GEN_ITEM("__sizeof__");
-    overrides[21] = GEN_ITEM("__dir__");
-    overrides[22] = GEN_ITEM("__class__");
-    overrides[23] = GEN_ITEM("__doc__");
-}
-
-PyObject *rand_override_name()
-{
-    return overrides[rand() % 24].obj;
-}
-
-PyObject *override_name(const char *name)
-{
-    uint32_t hash = SuperFastHash(name, strlen(name));
-    for (int i = 0; i < 24; i++)
-    {
-        if (overrides[i].hash == hash)
-        {
-            return overrides[i].obj;
+    int i = 0;
+    unsigned long hash = 0;
+    while(i < builtin_type_cnt){
+        HASH_VALUE(builtin_tp_name, strlen(builtin_tp_name), hash);
+        if(builtin_clz_str[i] == hash){
+            return &overridable_funcs_raw[builtin_clz_start[i] + rand() % (builtin_clz_start[i - 1] - builtin_clz_start[i])];
         }
     }
     return NULL;
+}
+
+overridable_func *override_func(const char *name)
+{
+    overridable_func *s;
+    HASH_FIND_STR(overridable_funcs, name, s);
+    return s;
 }
 
 static PyObject **types = NULL;
 
-void type_init()
-{
-    // int, float, complex, bool, list, tuple, range, str, bytes, bytearray, memoryview, set, frozenset, dict
-    types = (PyObject **)malloc(10 * sizeof(PyObject *));
-    types[0] = PyUnicode_FromString("int");
-    types[1] = PyUnicode_FromString("float");
-    types[2] = PyUnicode_FromString("str");
-    types[3] = PyUnicode_FromString("list");
-    types[4] = PyUnicode_FromString("tuple");
-    types[5] = PyUnicode_FromString("dict");
-    types[6] = PyUnicode_FromString("set");
-    types[7] = PyUnicode_FromString("frozenset");
-    types[8] = PyUnicode_FromString("bytes");
-    types[9] = PyUnicode_FromString("bytearray");
-}
-
 stmt_ty stmt(expr_ty expr, PyArena *arena)
 {
     return _PyAST_Expr(expr, LINE, arena);
-}
-
-int get_clz_count(asdl_stmt_seq *stmt_seq)
-{
-    int cnt = 0;
-    for (int i = 0; i < stmt_seq->size; i++)
-    {
-        if (stmt_seq->typed_elements[i]->kind == ClassDef_kind)
-        {
-            cnt++;
-        }
-    }
-    return cnt;
-}
-
-stmt_ty get_clz(asdl_stmt_seq *stmt_seq, int index)
-{
-    int cnt = 0;
-    for (int i = 0; i < stmt_seq->size; i++)
-    {
-        if (stmt_seq->typed_elements[i]->kind == ClassDef_kind)
-        {
-            if (cnt == index)
-            {
-                return stmt_seq->typed_elements[i];
-            }
-            cnt++;
-        }
-    }
-    return NULL;
 }

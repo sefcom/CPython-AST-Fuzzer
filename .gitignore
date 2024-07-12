@@ -7,4 +7,4 @@ build
 .nix-pyenv
 .vscode
 crash-*.txt
-src/deepcopy_ast/deepcopy_gen.*
+src/codgen/*_gen.*
