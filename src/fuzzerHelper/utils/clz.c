@@ -2,11 +2,11 @@
 
 // TODO keywords, mutiple base classes, decorators
 
-int plain_clz(PyArena *arena, stmt_ty *stmt){
-    int id;
+int plain_clz(ast_data_t *data, stmt_ty *stmt){
+    int id = (data->gen_name_cnt)++;
     *stmt = _PyAST_ClassDef(
-        gen_name(0, &id),
-        _Py_asdl_expr_seq_new(0, arena),
+        gen_name_id(id),
+        _Py_asdl_expr_seq_new(0, data->arena),
         NULL,
         NULL,
         NULL,
@@ -14,15 +14,16 @@ int plain_clz(PyArena *arena, stmt_ty *stmt){
         NULL,
         #endif
         LINE,
-        arena
+        data->arena
     );
+    data->plain_clz_cnt++;
     return id;
 }
-int clz_inherited(PyArena *arena, const char *base, stmt_ty *stmt){
-    int id;
+int clz_inherited(ast_data_t *data, const char *base, stmt_ty *stmt){
+    int id = (data->gen_name_cnt)++;
     *stmt = _PyAST_ClassDef(
-        gen_name(0, &id),
-        _Py_asdl_expr_seq_new(1, arena),
+        gen_name_id(id),
+        _Py_asdl_expr_seq_new(1, data->arena),
         NULL,
         NULL,
         NULL,
@@ -30,9 +31,10 @@ int clz_inherited(PyArena *arena, const char *base, stmt_ty *stmt){
         NULL,
         #endif
         LINE,
-        arena
+        data->arena
     );
-    (*stmt)->v.ClassDef.bases->typed_elements[0] = _PyAST_Name(PyUnicode_FromString_Arena(base, arena), Load, LINE, arena);
+    data->inherited_clz_cnt++;
+    (*stmt)->v.ClassDef.bases->typed_elements[0] = _PyAST_Name(PyUnicode_FromString_Arena(base, data->arena), Load, LINE, data->arena);
     return id;
 }
 

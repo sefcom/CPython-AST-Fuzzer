@@ -15,7 +15,7 @@ popd() {
 
 BUILD_PATH=$(readlink -f ./build)
 DEBUG_MODE=0
-LIBFUZZER_ARGS="-runs=20"
+LIBFUZZER_ARGS="-runs=2000"
 
 while [ "$1" != "" ]; do
     case $1 in

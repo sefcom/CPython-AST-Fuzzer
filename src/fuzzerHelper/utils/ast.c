@@ -48,19 +48,6 @@ PyObject *PyLong_FromLong_Arena(long n, PyArena *arena)
 
 static PyObject **names = NULL;
 
-PyObject *gen_name(int clear, int *id)
-{
-    static int cnt = 0;
-    if (clear)
-    {
-        cnt = 0;
-    }
-    if(id != NULL){
-        *id = cnt;
-    }
-    return names[cnt++ % 50];
-}
-
 PyObject *gen_name_id(int id)
 {
     return names[id];

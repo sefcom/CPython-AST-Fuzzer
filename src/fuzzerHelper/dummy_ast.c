@@ -1,7 +1,8 @@
 #include "helper.h"
 
-mod_ty init_dummy_ast(PyArena *arena)
+mod_ty init_dummy_ast(ast_data_t *data)
 {
+    PyArena *arena = data->arena;
     // dummy AST
     // print("Hellow world")
     expr_ty call_name = _PyAST_Name(PyUnicode_FromString_Arena("print", arena), Load, LINE, arena);
@@ -25,8 +26,9 @@ mod_ty init_dummy_ast(PyArena *arena)
     return mod;
 }
 
-mod_ty init_UAF2(PyArena *arena)
+mod_ty init_UAF2(ast_data_t *data)
 {
+    PyArena *arena = data->arena;
     // motivation sample 2
     // Module(body=[ClassDef(name='A', bases=[], keywords=[], body=[FunctionDef(name='__eq__', args=arguments(posonlyargs=[], args=[arg(arg='self', annotation=Name(id='A', ctx=Load())), arg(arg='other', annotation=Name(id='dict', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Assign(targets=[Subscript(value=Name(id='other', ctx=Load()), slice=Constant(value='items'), ctx=Store())], value=Constant(value=0))], decorator_list=[])], decorator_list=[]), Expr(value=Compare(left=Attribute(value=Name(id='dict', ctx=Load()), attr='__dict__', ctx=Load()), ops=[Eq()], comparators=[Call(func=Name(id='A', ctx=Load()), args=[], keywords=[])]))], type_ignores=[])
     arguments_ty args = _PyAST_arguments(
@@ -59,12 +61,12 @@ mod_ty init_UAF2(PyArena *arena)
 
     stmt_ty malicious_eq_func;
     assert(override_func("__eq__") != NULL);
-    func_w_name(arena, override_func("__eq__")->name, &malicious_eq_func, args);
+    func_w_name(data, override_func("__eq__")->name, &malicious_eq_func, args);
     malicious_eq_func->v.FunctionDef.body = _Py_asdl_stmt_seq_new(1, arena);
     malicious_eq_func->v.FunctionDef.body->elements[0] = malicious_assign;
 
     stmt_ty class_def;
-    int clz_name = plain_clz(arena, &class_def);
+    int clz_name = plain_clz(data, &class_def);
     class_def->v.ClassDef.body = _Py_asdl_stmt_seq_new(1, arena);
     class_def->v.ClassDef.body->elements[0] = malicious_eq_func;
 

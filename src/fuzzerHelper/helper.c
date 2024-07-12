@@ -1,20 +1,39 @@
 #include "helper.h"
 #include "mutators/mutators.h"
 
+void init_ast_data(ast_data_t **buf, PyArena *arena)
+{
+	ast_data_t *data = (ast_data_t *)_PyArena_Malloc(arena, sizeof(ast_data_t));
+	data->gen_name_cnt = 0;
+	data->plain_clz_cnt = 0;
+	data->inherited_clz_cnt = 0;
+	data->func_cnt = 0;
+	data->arena = arena;
+	data->mod = NULL;
+	*buf = data;
+}
+
 void get_dummy_ast(ast_data_t **data_ptr)
 {
 	PyArena *arena = _PyArena_New();
-	*data_ptr = (ast_data_t *)_PyArena_Malloc(arena, sizeof(ast_data_t));
-	(*data_ptr)->arena = arena;
-	(*data_ptr)->mod = init_dummy_ast((*data_ptr)->arena);
+	if(arena == NULL)
+	{
+		fprintf(stderr, "arena is NULL\n");
+	}
+	init_ast_data(data_ptr, arena);
+	(*data_ptr)->mod = init_dummy_ast(*data_ptr);
+	printf("plain clz count: %d\n", (*data_ptr)->plain_clz_cnt);
 }
 
 void get_UAF2_ast(ast_data_t **data_ptr)
 {
 	PyArena *arena = _PyArena_New();
-	*data_ptr = (ast_data_t *)_PyArena_Malloc(arena, sizeof(ast_data_t));
-	(*data_ptr)->arena = arena;
-	(*data_ptr)->mod = init_UAF2((*data_ptr)->arena);
+	if(arena == NULL)
+	{
+		fprintf(stderr, "arena is NULL\n");
+	}
+	init_ast_data(data_ptr, arena);
+	(*data_ptr)->mod = init_UAF2(*data_ptr);
 }
 
 void free_ast(ast_data_t **data_ptr)
@@ -30,7 +49,7 @@ size_t __attribute__((visibility("default"))) LLVMFuzzerCustomMutator(ast_data_t
 {
 	if (data == NULL || *data == NULL || size != sizeof(ast_data_t *))
 	{
-		printf("retrieving dummy ast, size=%d\n", size);
+		printf("retrieving dummy ast, previous size=%d\n", size);
 		get_dummy_ast(data);
 	}
 	else

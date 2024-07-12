@@ -29,7 +29,6 @@ PyObject *PyLong_Copy_Arena(PyObject *s, PyArena *arena);
 // --- name helpers ---
 
 void gen_name_init();
-PyObject *gen_name(int clear, int *id);
 PyObject *gen_name_id(int id);
 void override_name_init();
 overridable_func *rand_override_func(const char *builtin_tp_name);
@@ -40,13 +39,13 @@ overridable_func *override_func(const char *name);
 stmt_ty stmt(expr_ty expr, PyArena *arena);
 
 // -- class helpers --
-int plain_clz(PyArena *arena, stmt_ty *stmt);
-int clz_inherited(PyArena *arena, const char *base, stmt_ty *stmt);
+int plain_clz(ast_data_t *data, stmt_ty *stmt);
+int clz_inherited(ast_data_t *data, const char *base, stmt_ty *stmt);
 stmt_ty find_clz(asdl_stmt_seq *stmt_seq, PyObject *clz_name);
 
 // -- function helpers --
-int plain_func(PyArena *arena, stmt_ty *expr, arguments_ty args);
-void func_w_name(PyArena *arena, PyObject *name, stmt_ty *expr, arguments_ty args);
+int plain_func(ast_data_t *data, stmt_ty *expr, arguments_ty args);
+void func_w_name(ast_data_t *data, PyObject *name, stmt_ty *expr, arguments_ty args);
 
 // --- mutator helper ---
 
