@@ -75,6 +75,7 @@ else
     echo -e "${GREEN}[INFO] patching CPython$NC"
     cd $CPYTHON_PATH
     git reset --hard HEAD
+    nix-shell --pure --command "patch -p1 < \$PYTHON_NOLDPATCH" $SCRIPT_DIR/cpython.nix
     python $SCRIPT_DIR/patch_python.py
 
     cd $WORK_DIR
@@ -90,7 +91,8 @@ else
     mkdir -p $CPYTHON_BUILD_PATH
     mkdir -p $CPYTHON_BIN_PATH
     cd $CPYTHON_BUILD_PATH
-    nix-shell --pure --command "$CPYTHON_PATH/configure --enable-shared --prefix=\"$CPYTHON_BIN_PATH\"" $SCRIPT_DIR/cpython.nix
+    # cannot use --enable-optimizations
+    nix-shell --pure --command "$CPYTHON_PATH/configure ac_cv_func_lchmod=no --enable-shared --prefix=\"$CPYTHON_BIN_PATH\" --with-openssl=\"\$OPENSSL_DEV\" --with-system-expat --with-ensurepip" $SCRIPT_DIR/cpython.nix
     nix-shell --pure --command "make altinstall -j$USING_CORE" $SCRIPT_DIR/cpython.nix
 fi
 

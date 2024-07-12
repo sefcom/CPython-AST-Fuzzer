@@ -66,18 +66,19 @@ patches = []
 
 for d in instrument_dirs:
     d = PYTHON_PATH / d
-    assert(d.exists())
+    assert (d.exists())
     for file in d.rglob("*.c"):
         file_path = file.relative_to(PYTHON_PATH).as_posix().removesuffix(".c")
-        patches.append(with_libfuzzer.replace("IN_NAME", file_path + ".c").replace("OUT_NAME", file_path + ".o"))
+        patches.append(with_libfuzzer.replace(
+            "IN_NAME", file_path + ".c").replace("OUT_NAME", file_path + ".o"))
         print("instrument", file_path)
 
 patches += [""]
 
 content = [
-    "CFLAGS:=-fsanitize=address $(CFLAGS)\n",
-    "LDFLAGS:=-lstdc++ -fsanitize=address,fuzzer-no-link $(LDFLAGS)\n"
-           ]
+    "CFLAGS:=-fsanitize=address,signed-integer-overflow,unreachable -fsanitize-recover=all $(CFLAGS)\n",
+    "LDFLAGS:=-lstdc++ -fsanitize=address,signed-integer-overflow,unreachable,fuzzer-no-link -fsanitize-recover=all $(LDFLAGS)\n"
+]
 with open(PYTHON_PATH / "Makefile.pre.in", "r", encoding="utf8") as f:
     f_content = f.readlines()
     l = f_content.index(".c.o:\n")

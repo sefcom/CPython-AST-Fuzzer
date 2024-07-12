@@ -39,6 +39,20 @@ pkgs.mkShell {
     pkgs.lld_18
     pkgs.llvmPackages_18.compiler-rt-libc
     pkgs.ccache
+
+    # Required for building Python
+    pkgs.expat
+    pkgs.libxcrypt
+    pkgs.openssl
+    pkgs.bzip2
+    pkgs.libffi
+    pkgs.mpdecimal
+    pkgs.ncurses
+    pkgs.readline
+    pkgs.sqlite
+    pkgs.zlib
+    pkgs.xz
+    pkgs.tzdata
   ];
   shellHook = ''
     export ASAN_OPTIONS='detect_leaks=0';
@@ -46,5 +60,11 @@ pkgs.mkShell {
     export CXX="${pkgs.clang_18}/bin/clang++";
     export CLANG_BIN="${pkgs.clang_18}/bin/clang";
     export LIBCLANG_RT_PATH="${pkgs.llvmPackages_18.compiler-rt-libc}/lib/linux";
+
+    # for building Python
+    export OPENSSL_DEV=${pkgs.openssl.dev};
+    export PYTHON_NOLDPATCH="${pkgs.path}/pkgs/development/interpreters/python/cpython/3.13/no-ldconfig.patch";
+    export CFLAGS=-I${pkgs.libxcrypt}/include;
+    export LIBS=-L${pkgs.libxcrypt}/lib;
   '';
 }
