@@ -54,7 +54,7 @@ void __attribute__((visibility("default"))) crash_handler(){
 int __attribute__((visibility("default"))) LLVMFuzzerTestOneInput(const ast_data_t **data_ptr, size_t size) {
     __sanitizer_set_death_callback(crash_handler);
     if(data_ptr == NULL || size != sizeof(ast_data_t*)){
-        // let's cock
+        // let's cook
         return -1;
     }
     dump_ast(*data_ptr, data_backup->ast_dump, AST_DUMP_BUF_SIZE);
