@@ -51,6 +51,14 @@ void func_w_name(PyArena *arena, PyObject *name, stmt_ty *expr, arguments_ty arg
 // --- mutator helper ---
 
 int get_clz_count(asdl_stmt_seq *stmt_seq, int *plain_clz);
-stmt_ty get_clz(asdl_stmt_seq *stmt_seq, int index);
+stmt_ty get_clz(asdl_stmt_seq *stmt_seq, int index, int plain_clz_required);
+
+// --- override func codgen ---
+extern overridable_func *overridable_funcs;
+extern overridable_func *overridable_funcs_raw; 
+extern int builtin_clz_start[];
+extern unsigned long builtin_clz_str[]; // hash list
+extern const int builtin_type_cnt;
+extern PyObject **builtin_clz_obj;
 
 #endif

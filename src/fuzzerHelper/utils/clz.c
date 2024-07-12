@@ -47,7 +47,7 @@ int get_clz_count(asdl_stmt_seq *stmt_seq, int *plain_clz)
         if (stmt_seq->typed_elements[i]->kind == ClassDef_kind)
         {
             if(plain_clz != NULL && (stmt_seq->typed_elements[i]->v.ClassDef.bases == NULL || stmt_seq->typed_elements[i]->v.ClassDef.bases->size == 0)){
-                (*plain_clz)++;
+                *plain_clz = *plain_clz + 1;
             }
             cnt++;
         }
@@ -55,13 +55,16 @@ int get_clz_count(asdl_stmt_seq *stmt_seq, int *plain_clz)
     return cnt;
 }
 
-stmt_ty get_clz(asdl_stmt_seq *stmt_seq, int index)
+stmt_ty get_clz(asdl_stmt_seq *stmt_seq, int index, int plain_clz_required)
 {
     int cnt = 0;
     for (int i = 0; i < stmt_seq->size; i++)
     {
         if (stmt_seq->typed_elements[i]->kind == ClassDef_kind)
         {
+            if(plain_clz_required && stmt_seq->typed_elements[i]->v.ClassDef.bases != NULL && stmt_seq->typed_elements[i]->v.ClassDef.bases->size > 0){
+                continue;
+            }
             if (cnt == index)
             {
                 return stmt_seq->typed_elements[i];

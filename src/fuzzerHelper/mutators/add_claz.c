@@ -16,16 +16,15 @@ int add_clz_and_init(ast_data_t *data)
     return 0;
 }
 
-int make_clz_inherit(ast_data_t *data, PyObject *clz_name, const char *base)
+int make_clz_inherit(ast_data_t *data, stmt_ty clz, PyObject *base)
 {
-    stmt_ty clz = find_clz(data->mod->v.Module.body, clz_name);
-    assert(clz != NULL);
-    if(clz->v.ClassDef.bases != NULL){
+    assert(clz && clz->kind == ClassDef_kind);
+    if(clz->v.ClassDef.bases != NULL && clz->v.ClassDef.bases->size > 0){
         // TODO there maybe conflict between multiple base classes
         fprintf(stderr, "don't support inherit multiple classes\n");
         return -1;
     }
     clz->v.ClassDef.bases = _Py_asdl_expr_seq_new(1, data->arena);
-    clz->v.ClassDef.bases->typed_elements[clz->v.ClassDef.bases->size - 1] = _PyAST_Name(PyUnicode_FromString_Arena(base, data->arena), Load, LINE, data->arena);
+    clz->v.ClassDef.bases->typed_elements[clz->v.ClassDef.bases->size - 1] = _PyAST_Name(base, Load, LINE, data->arena);
     return 0;
 }

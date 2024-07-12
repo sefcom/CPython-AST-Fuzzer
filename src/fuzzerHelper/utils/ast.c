@@ -77,12 +77,6 @@ void gen_name_init()
     }
 }
 
-extern overridable_func *overridable_funcs;
-extern overridable_func *overridable_funcs_raw; 
-extern int builtin_clz_start[];
-extern unsigned long builtin_clz_str[]; // hash list
-extern int builtin_type_cnt;
-
 overridable_func *rand_override_func(const char *builtin_tp_name)
 {
     int i = 0;
