@@ -19,6 +19,7 @@ BUILD_PATH=$(readlink -f build)
 SRC_PATH=$(readlink -f ./src)
 USING_CORE=7
 
+BUILD_CPYTHON=0
 FORCE_MODE=0
 
 # COLORs
@@ -29,6 +30,8 @@ NC='\033[0m'
 # parse args skip-afl and skip-cpython
 while [ "$1" != "" ]; do
     case $1 in
+       -p | --force-cpython ) BUILD_CPYTHON=1
+                                ;;
         -f | --force )   FORCE_MODE=1
                                 ;;
         -j | --jobs )           shift
@@ -58,11 +61,11 @@ if [ -d $CPYTHON_PATH ]; then
 else
     echo -e "[INFO] cloning cpython into $CPYTHON_PATH"
     git clone --quiet --depth=1 --branch=v$CPYTHON_VERSION https://github.com/python/cpython.git $CPYTHON_PATH
-    FORCE_MODE=1
+    BUILD_CPYTHON=1
     cd $WORK_DIR
 fi
 
-if [ $FORCE_MODE -eq 0 ]; then
+if [ $BUILD_CPYTHON -eq 0 ]; then
     echo -e "${GREEN}[INFO] skipping force building Atheris and CPython$NC"
 else
     echo -e "${GREEN}[INFO] building Atheris and CPython$NC"
@@ -98,15 +101,26 @@ fi
 
 echo -e "${GREEN}[INFO] building pyFuzzer$NC"
 
-# -- codegen --
-python $SCRIPT_DIR/codgen/deepcopy_ast.py $(readlink -f $CPYTHON_BIN_PATH/include/python3.*/internal/pycore_ast.h) $SRC_PATH/codgen/deepcopy_gen
-python $SCRIPT_DIR/codgen/override_func.py $SRC_PATH/codgen/override_func_gen
-if [ -d $BUILD_PATH ]; then
-    rm -rf $BUILD_PATH
+if [ $FORCE_MODE -eq 1 ]; then
+    echo -e "${GREEN}[INFO] force building pyFuzzer$NC"
+    if [ -d $BUILD_PATH ]; then
+        rm -rf $BUILD_PATH
+    fi
+    
+    # -- codegen --
+    python $SCRIPT_DIR/codgen/deepcopy_ast.py $(readlink -f $CPYTHON_BIN_PATH/include/python3.*/internal/pycore_ast.h) $SRC_PATH/codgen/deepcopy_gen
+    python $SCRIPT_DIR/codgen/override_func.py $SRC_PATH/codgen/override_func_gen
 fi
+
 mkdir -p $BUILD_PATH
 cd $BUILD_PATH
-nix-shell --pure --command "PYTHON_PATH=$CPYTHON_BIN_PATH cmake $SRC_PATH -DCMAKE_BUILD_TYPE=Debug" $SCRIPT_DIR/cpython.nix
+# if exit makefile, skip cmake
+if [ -f "Makefile" ]; then
+    echo -e "${GREEN}[INFO] skipping configuring cmake$NC"
+else
+    echo -e "${GREEN}[INFO] configuring cmake$NC"
+    nix-shell --pure --command "PYTHON_PATH=$CPYTHON_BIN_PATH cmake $SRC_PATH -DCMAKE_BUILD_TYPE=Debug" $SCRIPT_DIR/cpython.nix
+fi
 nix-shell --pure --command "make -j$USING_CORE" $SCRIPT_DIR/cpython.nix
 
 cd $WORK_DIR
