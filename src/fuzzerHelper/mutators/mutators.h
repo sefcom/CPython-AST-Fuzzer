@@ -3,7 +3,7 @@
 
 #include "../utils/ast.h"
 
-void entry_mutate(ast_data_t **data, size_t max_size, size_t seed);
+int entry_mutate(ast_data_t **data, size_t max_size, size_t seed);
 
 // --- mutators ---
 
@@ -12,6 +12,6 @@ int add_clz_and_init(ast_data_t *data);
 int make_clz_inherit(ast_data_t *data, stmt_ty clz, PyObject *base);
 
 // -- function --
-int add_rand_override(ast_data_t *data, PyObject *clz_name, overridable_func func);
+int add_rand_override(ast_data_t *data, stmt_ty clz, overridable_func func);
 
 #endif // MUTATORS_H

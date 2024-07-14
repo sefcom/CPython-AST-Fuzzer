@@ -31,7 +31,7 @@ PyObject *PyLong_Copy_Arena(PyObject *s, PyArena *arena);
 void gen_name_init();
 PyObject *gen_name_id(int id);
 void override_name_init();
-overridable_func *rand_override_func(const char *builtin_tp_name);
+overridable_func rand_override_func(int base_clz_id);
 overridable_func *override_func(const char *name);
 
 // --- AST helpers ---

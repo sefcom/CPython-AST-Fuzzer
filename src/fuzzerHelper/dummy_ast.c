@@ -8,21 +8,14 @@ mod_ty init_dummy_ast(ast_data_t *data)
     expr_ty call_name = _PyAST_Name(PyUnicode_FromString_Arena("print", arena), Load, LINE, arena);
     asdl_expr_seq *call_args = _Py_asdl_expr_seq_new(1, arena);
     call_args->typed_elements[0] = _PyAST_Constant(PyUnicode_FromString_Arena("Hello world", arena), NULL, LINE, arena);
-    asdl_keyword_seq *call_keywords = _Py_asdl_keyword_seq_new(0, arena);
     stmt_ty call = _PyAST_Expr(
-        _PyAST_Call(call_name, call_args, call_keywords, LINE, arena),
+        _PyAST_Call(call_name, call_args, NULL, LINE, arena),
         LINE, arena);
     asdl_stmt_seq *body = _Py_asdl_stmt_seq_new(1, arena);
     body->elements[0] = call;
-    asdl_type_ignore_seq *ignored = _Py_asdl_type_ignore_seq_new(0, arena);
 
-    mod_ty mod = _PyAST_Module(body, ignored, arena);
-    int val = _PyAST_Validate(mod);
-    if (PyErr_Occurred())
-    {
-        PyErr_Print();
-    }
-    assert(val != 0);
+    mod_ty mod = _PyAST_Module(body, NULL, arena);
+    assert(!(mod == NULL || !_PyAST_Validate(mod)));
     return mod;
 }
 
@@ -32,13 +25,13 @@ mod_ty init_UAF2(ast_data_t *data)
     // motivation sample 2
     // Module(body=[ClassDef(name='A', bases=[], keywords=[], body=[FunctionDef(name='__eq__', args=arguments(posonlyargs=[], args=[arg(arg='self', annotation=Name(id='A', ctx=Load())), arg(arg='other', annotation=Name(id='dict', ctx=Load()))], kwonlyargs=[], kw_defaults=[], defaults=[]), body=[Assign(targets=[Subscript(value=Name(id='other', ctx=Load()), slice=Constant(value='items'), ctx=Store())], value=Constant(value=0))], decorator_list=[])], decorator_list=[]), Expr(value=Compare(left=Attribute(value=Name(id='dict', ctx=Load()), attr='__dict__', ctx=Load()), ops=[Eq()], comparators=[Call(func=Name(id='A', ctx=Load()), args=[], keywords=[])]))], type_ignores=[])
     arguments_ty args = _PyAST_arguments(
-        _Py_asdl_arg_seq_new(0, arena),
+       NULL,
         _Py_asdl_arg_seq_new(2, arena),
         NULL,
-        _Py_asdl_arg_seq_new(0, arena),
-        _Py_asdl_expr_seq_new(0, arena),
         NULL,
-        _Py_asdl_expr_seq_new(0, arena),
+        NULL,
+        NULL,
+        NULL,
         arena);
     // optional type hints
     expr_ty dict_type = _PyAST_Name(PyUnicode_FromString_Arena("dict", arena), Load, LINE, arena);
@@ -113,11 +106,6 @@ mod_ty init_UAF2(ast_data_t *data)
     mod->v.Module.body->elements[1] = target_call_wrapper;
     mod->v.Module.body->elements[2] = call_items_wrapper;
 
-    int val = _PyAST_Validate(mod);
-    if (PyErr_Occurred())
-    {
-        PyErr_Print();
-    }
-    assert(val != 0);
+    assert(!(mod == NULL || !_PyAST_Validate(mod)));
     return mod;
 }

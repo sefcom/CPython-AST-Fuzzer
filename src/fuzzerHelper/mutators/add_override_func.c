@@ -1,10 +1,17 @@
 #include "mutators.h"
 #include "deepcopy.h"
 
-int add_rand_override(ast_data_t *data, PyObject *clz_name, overridable_func func)
+int add_rand_override(ast_data_t *data, stmt_ty clz, overridable_func func)
 {
-    stmt_ty clz = find_clz(data->mod->v.Module.body, clz_name);
     assert(clz != NULL);
+    if(clz->v.ClassDef.body != NULL && clz->v.ClassDef.body->size > 0){
+        for(int i = 0; i < clz->v.ClassDef.body->size; i++){
+            if(clz->v.ClassDef.body->typed_elements[i]->kind == FunctionDef_kind && clz->v.ClassDef.body->typed_elements[i]->v.FunctionDef.name == func.name){
+                printf("function %s already exists in class\n", func.name);
+                return -2; // re-roll w/o copy
+            }
+        }
+    }
     clz->v.ClassDef.body = asdl_stmt_seq_copy_add(clz->v.ClassDef.body, data->arena, 1);
     arguments_ty args = _PyAST_arguments(
         NULL,
@@ -24,6 +31,6 @@ int add_rand_override(ast_data_t *data, PyObject *clz_name, overridable_func fun
     if(func.arg_type & HAS_VARARGS){
         args->vararg = _PyAST_arg(PyUnicode_FromString_Arena("varargs", data->arena), NULL, NULL, LINE, data->arena);
     }
-    func_w_name(data, func.name, &clz->v.ClassDef.body->typed_elements[clz->v.ClassDef.body->size - 1], args);
+    func_w_name(data, func.name, &(clz->v.ClassDef.body->typed_elements[clz->v.ClassDef.body->size - 1]), args);
     return 0;
 }

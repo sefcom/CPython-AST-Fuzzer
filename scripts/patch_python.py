@@ -75,9 +75,10 @@ for d in instrument_dirs:
 
 patches += [""]
 
+# TODO maybe try -fsanitize-recover=all
 content = [
-    "CFLAGS:=-fsanitize=address,signed-integer-overflow,unreachable -fsanitize-recover=all $(CFLAGS)\n",
-    "LDFLAGS:=-lstdc++ -fsanitize=address,signed-integer-overflow,unreachable,fuzzer-no-link -fsanitize-recover=all $(LDFLAGS)\n"
+    "CFLAGS:=-fsanitize=address,signed-integer-overflow,unreachable $(CFLAGS)\n",
+    "LDFLAGS:=-lstdc++ -fsanitize=address,signed-integer-overflow,unreachable,fuzzer-no-link $(LDFLAGS)\n"
 ]
 with open(PYTHON_PATH / "Makefile.pre.in", "r", encoding="utf8") as f:
     f_content = f.readlines()

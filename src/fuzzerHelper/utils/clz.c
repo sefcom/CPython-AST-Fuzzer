@@ -6,9 +6,9 @@ int plain_clz(ast_data_t *data, stmt_ty *stmt){
     int id = (data->gen_name_cnt)++;
     *stmt = _PyAST_ClassDef(
         gen_name_id(id),
-        _Py_asdl_expr_seq_new(0, data->arena),
         NULL,
         NULL,
+        _Py_asdl_stmt_seq_new(1, data->arena), // body is required
         NULL,
         #if PYTHON_VER == 313
         NULL,
@@ -16,6 +16,7 @@ int plain_clz(ast_data_t *data, stmt_ty *stmt){
         LINE,
         data->arena
     );
+    (*stmt)->v.ClassDef.body->typed_elements[0] = _PyAST_Pass(LINE, data->arena); // placeholder
     data->plain_clz_cnt++;
     return id;
 }
@@ -25,7 +26,7 @@ int clz_inherited(ast_data_t *data, const char *base, stmt_ty *stmt){
         gen_name_id(id),
         _Py_asdl_expr_seq_new(1, data->arena),
         NULL,
-        NULL,
+        _Py_asdl_stmt_seq_new(1, data->arena), // body is required,
         NULL,
         #if PYTHON_VER == 313
         NULL,
@@ -34,6 +35,7 @@ int clz_inherited(ast_data_t *data, const char *base, stmt_ty *stmt){
         data->arena
     );
     data->inherited_clz_cnt++;
+    (*stmt)->v.ClassDef.body->typed_elements[0] = _PyAST_Pass(LINE, data->arena); // placeholder
     (*stmt)->v.ClassDef.bases->typed_elements[0] = _PyAST_Name(PyUnicode_FromString_Arena(base, data->arena), Load, LINE, data->arena);
     return id;
 }
@@ -83,8 +85,7 @@ stmt_ty find_clz(asdl_stmt_seq *stmt_seq, PyObject *clz_name)
     {
         if (stmt_seq->typed_elements[i]->kind == ClassDef_kind)
         {
-            // because all names are generated, the address should be same if content is same
-            if (((stmt_ty)stmt_seq->typed_elements[i])->v.ClassDef.name == clz_name)
+            if (PyUnicode_Compare((stmt_seq->typed_elements[i])->v.ClassDef.name, clz_name) == 0)
             {
                 return stmt_seq->typed_elements[i];
             }

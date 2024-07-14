@@ -50,6 +50,9 @@ def gen_targets(codes: list[str], target: str):
 
     template = """%s_ty %s_copy(%s_ty val, PyArena *arena)
 {
+    if(val == NULL){
+        return NULL;
+    }
     %s_ty re = _PyArena_Malloc(arena, sizeof(struct _%s));
     re->kind = val->kind;
     switch (val->kind) {
@@ -69,6 +72,17 @@ def gen_targets(codes: list[str], target: str):
             break
         i, code = parse_struct(i + base, codes)
         body += code + "\n"
+    if(target == "stmt"):
+        body += """
+case Pass_kind:
+case Break_kind:
+case Continue_kind:
+    re->lineno = val->lineno;
+    re->col_offset = val->col_offset;
+    re->end_lineno = val->end_lineno;
+    re->end_col_offset = val->end_col_offset;
+    break;
+""".strip()
     body = body.replace("\n", "\n" + " " * 6)
     return template.replace("BODY", " " * 3 + body)
 
@@ -83,6 +97,9 @@ def gen_inidvidual_targets(codes: list[str], target: str):
     codes = codes[:i + 1]
     template = """%s_ty %s_copy(%s_ty val, PyArena *arena)
 {
+    if(val == NULL){
+        return NULL;
+    }
     %s_ty re = _PyArena_Malloc(arena, sizeof(struct _%s));
     BODY
     return re;

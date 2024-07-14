@@ -22,7 +22,7 @@ typedef struct{
 } ast_data_t;
 
 typedef struct{
-    const char *ast_dump;
+    char *ast_dump;
 } global_info_t;
 
 #endif

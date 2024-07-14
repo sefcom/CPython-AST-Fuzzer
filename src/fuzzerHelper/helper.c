@@ -22,7 +22,6 @@ void get_dummy_ast(ast_data_t **data_ptr)
 	}
 	init_ast_data(data_ptr, arena);
 	(*data_ptr)->mod = init_dummy_ast(*data_ptr);
-	printf("plain clz count: %d\n", (*data_ptr)->plain_clz_cnt);
 }
 
 void get_UAF2_ast(ast_data_t **data_ptr)
@@ -51,19 +50,19 @@ size_t __attribute__((visibility("default"))) LLVMFuzzerCustomMutator(ast_data_t
 	{
 		printf("retrieving dummy ast, previous size=%d\n", size);
 		get_dummy_ast(data);
+		return sizeof(ast_data_t *);
 	}
 	else
 	{
 		// free_ast(data);
 		// get_UAF2_ast(data);
-		entry_mutate(data, max_size, seed);
+		return entry_mutate(data, max_size, seed);
 	}
-	return sizeof(ast_data_t *);
 }
 
 int __attribute__((visibility("default"))) LLVMFuzzerInitialize(int *argc, char ***argv) {
 	data_backup = (global_info_t *)malloc(sizeof(global_info_t));
-	data_backup->ast_dump = (const char *)calloc(AST_DUMP_BUF_SIZE, 1);
+	data_backup->ast_dump = (char *)calloc(AST_DUMP_BUF_SIZE, 1);
     Py_Initialize();
 	gen_name_init();
 	override_name_init();

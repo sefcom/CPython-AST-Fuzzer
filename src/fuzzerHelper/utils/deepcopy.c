@@ -42,14 +42,18 @@ PyObject *constant_copy(PyObject *val, PyArena *arena)
 #define ASDL_SEQ_COPY_ADD(type)                                                                           \
     asdl_##type##_seq *asdl_##type##_seq##_copy_add(asdl_##type##_seq *seq, PyArena *arena, int add_size) \
     {                                                                                                     \
+        asdl_##type##_seq *re;                                                                            \
         if (seq == NULL)                                                                                  \
         {                                                                                                 \
-            asdl_##type##_seq *re = _Py_##asdl_##type##_seq##_new(add_size, arena);                       \
+            re = _Py_##asdl_##type##_seq##_new(add_size, arena);                                          \
         }                                                                                                 \
-        asdl_##type##_seq *re = _Py_##asdl_##type##_seq##_new(seq->size + add_size, arena);               \
-        for (int i = 0; i < seq->size; i++)                                                               \
+        else                                                                                              \
         {                                                                                                 \
-            re->typed_elements[i] = type##_copy(seq->typed_elements[i], arena);                           \
+            re = _Py_##asdl_##type##_seq##_new(seq->size + add_size, arena);                              \
+            for (int i = 0; i < seq->size; i++)                                                           \
+            {                                                                                             \
+                re->typed_elements[i] = type##_copy(seq->typed_elements[i], arena);                       \
+            }                                                                                             \
         }                                                                                                 \
         return re;                                                                                        \
     }
@@ -77,7 +81,7 @@ asdl_int_seq *asdl_int_seq_copy(asdl_int_seq *seq, PyArena *arena)
     asdl_int_seq *re = _Py_asdl_int_seq_new(seq->size, arena);
     for (int i = 0; i < seq->size; i++)
     {
-        re->elements[i] = seq->elements[i];
+        re->typed_elements[i] = seq->typed_elements[i];
     }
     return re;
 }
@@ -86,7 +90,7 @@ asdl_int_seq *asdl_int_seq_copy_add(asdl_int_seq *seq, PyArena *arena, int add_s
     asdl_int_seq *re = _Py_asdl_int_seq_new(seq->size + add_size, arena);
     for (int i = 0; i < seq->size; i++)
     {
-        re->elements[i] = seq->elements[i];
+        re->typed_elements[i] = seq->typed_elements[i];
     }
     return re;
 }

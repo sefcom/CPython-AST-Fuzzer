@@ -64,17 +64,9 @@ void gen_name_init()
     }
 }
 
-overridable_func *rand_override_func(const char *builtin_tp_name)
+overridable_func rand_override_func(int base_clz_id)
 {
-    int i = 0;
-    unsigned long hash = 0;
-    while(i < builtin_type_cnt){
-        HASH_VALUE(builtin_tp_name, strlen(builtin_tp_name), hash);
-        if(builtin_clz_str[i] == hash){
-            return &overridable_funcs_raw[builtin_clz_start[i] + rand() % (builtin_clz_start[i - 1] - builtin_clz_start[i])];
-        }
-    }
-    return NULL;
+    return overridable_funcs_raw[builtin_clz_start[base_clz_id] + rand() % (builtin_clz_start[base_clz_id + 1] - builtin_clz_start[base_clz_id])];
 }
 
 overridable_func *override_func(const char *name)

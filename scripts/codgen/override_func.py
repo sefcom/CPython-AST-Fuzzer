@@ -44,9 +44,9 @@ for k, v in targets_specs.items():
     builtin_clz_str += " " * 4 + f"{0},// {k}\n"
     for f, spec in v:
         if spec == []:
-            body += f"overridable_funcs_raw[{i}] = GEN_ITEM(\"{k}.{f}\", 1, {0b100});\n" # self
+            body += f"overridable_funcs_raw[{i}] = GEN_ITEM(\"{f}\", 1, {0b100});\n" # self
         else:
-            body += f"overridable_funcs_raw[{i}] = GEN_ITEM(\"{k}.{f}\", {len(spec[0])}, {int(spec[1] is not None) + int(spec[2] is not None) << 1 + int("self" in spec[0]) << 2});\n"
+            body += f"overridable_funcs_raw[{i}] = GEN_ITEM(\"{f}\", {len(spec[0])}, {int(spec[1] is not None) + int(spec[2] is not None) << 1 + int("self" in spec[0]) << 2});\n"
         i += 1
     body += f"builtin_clz_obj[{j}] = PyUnicode_FromString(\"{k}\");\n"
     body += f"HASH_VALUE(\"{k}\", {len(k)}, builtin_clz_str[{j}]);\n"
@@ -59,6 +59,7 @@ for(int i = 0; i < %d; i++){
 # print(body)
 body = body.replace("\n", "\n" + " " * 4)
 codes = codes.replace("BODY", body)
+builtin_clz_start += " " * 4 + f"{obj_cnt},// end\n"
 builtin_clz_start += "};\n"
 builtin_clz_str += "};\n"
 builtin_clz_start += builtin_clz_str

@@ -1,4 +1,8 @@
 #include "target.h"
+#include <signal.h>
+
+static PyObject *ast_module = NULL;
+static PyObject *ast_dump = NULL;
 
 void dump_ast(const ast_data_t *data, char *buf, size_t max_len)
 {
@@ -7,38 +11,46 @@ void dump_ast(const ast_data_t *data, char *buf, size_t max_len)
 	{
 		return;
 	}
-	PyObject *ast_module = PyImport_ImportModule("ast");
 	if (ast_module == NULL)
 	{
-		fprintf(stderr, "ast_module\n");
-		Py_DECREF(code);
-		return;
+		ast_module = PyImport_ImportModule("ast");
+		if (ast_module == NULL)
+		{
+			fprintf(stderr, "Cannot import ast_module\n");
+			Py_DECREF(code);
+			signal(SIGABRT, SIG_DFL);
+		}
 	}
-	PyObject *ast_dump = PyObject_GetAttrString(ast_module, "dump");
 	if (ast_dump == NULL)
 	{
-		fprintf(stderr, "ast_dump\n");
-		Py_DECREF(code);
-		Py_DECREF(ast_module);
-		return;
+		ast_dump = PyObject_GetAttrString(ast_module, "dump");
+		if (ast_dump == NULL)
+		{
+			fprintf(stderr, "Cannot find ast_dump\n");
+			Py_DECREF(code);
+			Py_DECREF(ast_module);
+			signal(SIGABRT, SIG_DFL);
+		}
 	}
 	PyObject *ast_str = PyObject_CallFunctionObjArgs(ast_dump, code, NULL);
 	// printf("AST=%s\n", PyUnicode_AsUTF8(ast_str));
 	Py_ssize_t len;
+	if (PyErr_Occurred())
+	{
+		PyErr_Print();
+		signal(SIGABRT, SIG_DFL);
+	}
 	const char *str = PyUnicode_AsUTF8AndSize(ast_str, &len);
-	if(len >= max_len){
+	if (len >= max_len)
+	{
 		fprintf(stderr, "Buffer is not enough for backup ast data for crash report\n");
-	}else{
+	}
+	else
+	{
 		memcpy(buf, str, len);
 		buf[len] = '\0';
 	}
-	if(PyErr_Occurred()){
-		PyErr_Print();
-		return;
-	}
 	// Py_DECREF(addr);
 	Py_DECREF(code);
-	Py_DECREF(ast_module);
-	Py_DECREF(ast_dump);
 	Py_DECREF(ast_str);
 }

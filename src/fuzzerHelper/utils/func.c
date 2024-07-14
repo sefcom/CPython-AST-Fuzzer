@@ -5,7 +5,7 @@ int plain_func(ast_data_t *data, stmt_ty *stmt, arguments_ty args){
     *stmt = _PyAST_FunctionDef(
         gen_name_id(id),
         args,
-        NULL,
+        _Py_asdl_stmt_seq_new(1, data->arena),
         NULL,
         NULL,
         NULL,
@@ -15,6 +15,7 @@ int plain_func(ast_data_t *data, stmt_ty *stmt, arguments_ty args){
         LINE,
         data->arena
     );
+    (*stmt)->v.FunctionDef.body->typed_elements[0] = _PyAST_Pass(LINE, data->arena); // placeholder
     data->func_cnt++;
     return id;
 }
@@ -22,7 +23,7 @@ void func_w_name(ast_data_t *data, PyObject *name, stmt_ty *stmt, arguments_ty a
     *stmt = _PyAST_FunctionDef(
         name,
         args,
-        NULL,
+        _Py_asdl_stmt_seq_new(1, data->arena), // body is required,
         NULL,
         NULL,
         NULL,
@@ -32,5 +33,6 @@ void func_w_name(ast_data_t *data, PyObject *name, stmt_ty *stmt, arguments_ty a
         LINE,
         data->arena
     );
+    (*stmt)->v.FunctionDef.body->typed_elements[0] = _PyAST_Pass(LINE, data->arena); // placeholder
     data->func_cnt++;
 }
