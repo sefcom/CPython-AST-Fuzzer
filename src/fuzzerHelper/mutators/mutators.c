@@ -87,7 +87,7 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
         if (state < 0)
         {
             // redo the loop
-            printf("bad state, redo\n");
+            printf("bad state %d, redo\n", state);
             if (state == -1)
             {
                 // dirty data
