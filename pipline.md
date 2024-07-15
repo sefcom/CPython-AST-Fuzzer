@@ -123,7 +123,7 @@ class A:
                 # other["items"] = bytearray(100)
 
 # it will modify the member function in dict, and it should not?
-dict.__dict__ == A() # UAF reported by ASAN
+A().__eq__(dict.__dict__) # UAF reported by ASAN
 # {1:1}.items() # crash
 
 # -- exploit --
@@ -135,11 +135,9 @@ dict.__dict__ == A() # UAF reported by ASAN
 ```
 technic required:
 - class definition
-- overload `__eq__`
+- overload `__eq__`, and call
 - `dict` type and its member function
 - calling of member function `dict.items()`
-- equal operator
-
 <!--
 ### PHP and other
 TODO

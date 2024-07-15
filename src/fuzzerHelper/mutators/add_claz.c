@@ -36,3 +36,22 @@ int make_clz_inherit(ast_data_t *data, stmt_ty clz, PyObject *base)
     data->plain_clz_cnt--;
     return STATE_OK;
 }
+
+int init_builtin_instance(ast_data_t *data, PyObject *type)
+{
+    data->mod->v.Module.body = asdl_stmt_seq_copy_add(data->mod->v.Module.body, data->arena, 1);
+    asdl_stmt_seq *body = data->mod->v.Module.body;
+    body->typed_elements[body->size - 1] = _PyAST_Assign(
+        _Py_asdl_expr_seq_new(1, data->arena),
+        _PyAST_Call(
+            _PyAST_Name(type, Load, LINE, data->arena),
+            NULL,
+            NULL,
+            LINE,
+            data->arena),
+        NULL,
+        LINE,
+        data->arena);
+    body->typed_elements[body->size - 1]->v.Assign.targets->typed_elements[0] = _PyAST_Name(gen_name_id((data->gen_name_cnt)++), Store, LINE, data->arena);
+    return STATE_OK;
+}

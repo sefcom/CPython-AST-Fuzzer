@@ -31,7 +31,7 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
             new_data = copy_asd_data_t(*data);
             state = STATE_REROLL;
         }
-        switch (rand() % 3)
+        switch (rand() % 4)
         {
         // add class def and call init
         case 0:
@@ -87,13 +87,21 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
             state = add_rand_override(new_data, picked_clz, rand_override_func(clz_base_id));
         }
         break;
+        // init a builtin type instance
+        case 3:
+        {
+            INFO("mutator: init_builtin_instance\n");
+            int picked_type = rand() % builtin_type_cnt;
+            state = init_builtin_instance(new_data, builtin_clz_obj[picked_type]);
+        }
+        break;
         }
 
         if (unlikely(PyErr_Occurred() || new_data->mod == NULL) || !_PyAST_Validate(new_data->mod))
         {
             ERROR("invalid ast\n");
             ERROR("more info: mod=%p, func_cnt=%d, plain_clz_cnt=%d, inherited_clz_cnt=%d\n",
-                    new_data->mod, new_data->func_cnt, new_data->plain_clz_cnt, new_data->inherited_clz_cnt);
+                  new_data->mod, new_data->func_cnt, new_data->plain_clz_cnt, new_data->inherited_clz_cnt);
             state = STATE_COPY_REROLL; // dirty data
         }
 
