@@ -3,6 +3,12 @@
 
 #include "../utils/ast.h"
 
+typedef enum STATE_FLAG{
+    STATE_OK = 0,
+    STATE_COPY_REROLL = -1,
+    STATE_REROLL = -2,
+} STATE_FLAG;
+
 int entry_mutate(ast_data_t **data, size_t max_size, size_t seed);
 
 // --- mutators ---

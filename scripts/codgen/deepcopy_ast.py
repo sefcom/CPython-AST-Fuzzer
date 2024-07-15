@@ -90,7 +90,7 @@ def gen_inidvidual_targets(codes: list[str], target: str):
     i = 0
     while i < len(codes) and codes[i].replace(" ", "") != "struct_%s{" % target:
         i += 1
-    codes = codes[i + 1:]
+    codes = codes[i:]
     i = 0
     while i < len(codes) and codes[i] != "};":
         i += 1
