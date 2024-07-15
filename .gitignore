@@ -1,7 +1,7 @@
 atheris
 cpython
 cpython*
-log*
+log*/
 build
 .gdb_history
 .nix-pyenv
