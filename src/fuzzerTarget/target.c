@@ -8,25 +8,27 @@ void run_mod(const mod_ty mod)
     PyCompilerFlags flag = _PyCompilerFlags_INIT;
     PyArena *arena = _PyArena_New();
     if(arena == NULL){
-        if(!PyErr_Occurred()) PyErr_SetString(PyExc_RuntimeError, "Failed to create arena");
-        PyErr_Print();
+        if(PyErr_Occurred()) PyErr_Print();
+        PANIC("Failed to create arena\n");
     }
+    
     PyObject *code = (PyObject *)_PyAST_Compile(mod, fname, &flag, -1, arena);
     if(PyErr_Occurred()){
         PyErr_Print();
     }
     if (code == NULL)
     {
-        if(!PyErr_Occurred()) PyErr_SetString(PyExc_RuntimeError, "Failed to compile mod_ty");
+        if(PyErr_Occurred()) PyErr_Print();
         _PyArena_Free(arena);
         Py_DECREF(fname);
-        PyErr_Print();
+        PANIC("Failed to compile AST\n");
     }
     PyObject *globals = PyEval_GetBuiltins();
     PyObject *locals = PyDict_New();
     if(PyErr_Occurred()){
         PyErr_Print();
     }
+    // don't be fooled by "eval" in name, PyRun_StringFlags -> _PyRun_StringFlagsWithName -> run_mod -> run_eval_code_obj -> PyEval_EvalCode
     PyObject *result = PyEval_EvalCode(code, globals, locals);
     if(PyErr_Occurred()){
         PyErr_Print();
@@ -41,7 +43,7 @@ void run_mod(const mod_ty mod)
 extern global_info_t *data_backup;
 
 void __attribute__((visibility("default"))) crash_handler(){
-	fprintf(stderr, "crash! saving states\n");
+	ERROR("crash! saving states\n");
 	char str[19];
     unsigned int hash;
     HASH_VALUE(data_backup->ast_dump, strlen(data_backup->ast_dump), hash);
@@ -58,7 +60,7 @@ int __attribute__((visibility("default"))) LLVMFuzzerTestOneInput(const ast_data
         return -1;
     }
     dump_ast(*data_ptr, data_backup->ast_dump, AST_DUMP_BUF_SIZE);
-    printf("ast=%s\n", data_backup->ast_dump);
+    INFO("ast=%s\n", data_backup->ast_dump);
     run_mod((*data_ptr)->mod);
     return 0;  // Values other than 0 and -1 are reserved for future use.
 }

@@ -29,7 +29,7 @@ PyObject *constant_copy(PyObject *val, PyArena *arena)
     {
         return PyUnicode_Copy_Arena(val, arena);
     }
-    fprintf(stderr, "Unknown constant type, use fallback - %s\n", val->ob_type->tp_name);
+    ERROR("Unknown constant type, use fallback - %s\n", val->ob_type->tp_name);
     _PyArena_AddPyObject(arena, val);
     Py_INCREF(val);
     return val;

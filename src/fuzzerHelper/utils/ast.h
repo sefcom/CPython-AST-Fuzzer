@@ -3,6 +3,7 @@
 
 #include "defs.h"
 #include "common.h"
+#include "log.h"
 
 typedef enum {
     HAS_VARARGS = 0b1,

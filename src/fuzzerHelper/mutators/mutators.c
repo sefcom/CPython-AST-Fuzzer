@@ -1,6 +1,5 @@
 #include "mutators.h"
 #include "deepcopy.h"
-#include <signal.h>
 
 ast_data_t *copy_asd_data_t(ast_data_t *src)
 {
@@ -9,7 +8,7 @@ ast_data_t *copy_asd_data_t(ast_data_t *src)
     dst->arena = arena;
     if (dst->arena == NULL)
     {
-        fprintf(stderr, "arena is NULL\n");
+        PANIC("arena is NULL\n");
     }
     dst->mod = mod_copy(src->mod, dst->arena);
     dst->gen_name_cnt = src->gen_name_cnt;
@@ -37,21 +36,21 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
         // add class def and call init
         case 0:
         {
-            printf("mutator: add_clz_and_init\n");
+            INFO("mutator: add_clz_and_init\n");
             state = add_clz_and_init(new_data);
         }
         break;
         // inherit a plain class from random base class
         case 1:
         {
-            printf("mutator: make_clz_inherit\n");
+            INFO("mutator: make_clz_inherit\n");
             if (new_data->plain_clz_cnt == 0)
             {
                 state = STATE_REROLL; // no plain classes defined yet, just re-roll
                 break;
             }
             int picked_clz_id = rand() % new_data->plain_clz_cnt;
-            printf("picked_clz: %d/%d\n", picked_clz_id, new_data->plain_clz_cnt);
+            INFO("picked_clz: %d/%d\n", picked_clz_id, new_data->plain_clz_cnt);
             stmt_ty picked_clz = get_clz(new_data->mod->v.Module.body, picked_clz_id, 1);
             assert(picked_clz != NULL);
             int picked_clz_base = rand() % builtin_type_cnt;
@@ -61,7 +60,7 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
         // add random override function
         case 2:
         {
-            printf("mutator: add_rand_override\n");
+            INFO("mutator: add_rand_override\n");
             int clz_cnt = new_data->plain_clz_cnt + new_data->inherited_clz_cnt;
             if (clz_cnt == 0)
             {
@@ -69,7 +68,7 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
                 break;
             }
             int picked_clz_id = rand() % clz_cnt;
-            printf("picked_clz: %d/%d\n", picked_clz_id, clz_cnt);
+            INFO("picked_clz: %d/%d\n", picked_clz_id, clz_cnt);
             stmt_ty picked_clz = get_clz(new_data->mod->v.Module.body, picked_clz_id, 0);
             assert(picked_clz != NULL);
             int clz_base_id = 0; // default inherit from object
@@ -92,8 +91,8 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
 
         if (unlikely(PyErr_Occurred() || new_data->mod == NULL) || !_PyAST_Validate(new_data->mod))
         {
-            fprintf(stderr, "invalid ast\n");
-            fprintf(stderr, "info: mod=%p, func_cnt=%d, plain_clz_cnt=%d, inherited_clz_cnt=%d\n",
+            ERROR("invalid ast\n");
+            ERROR("more info: mod=%p, func_cnt=%d, plain_clz_cnt=%d, inherited_clz_cnt=%d\n",
                     new_data->mod, new_data->func_cnt, new_data->plain_clz_cnt, new_data->inherited_clz_cnt);
             state = STATE_COPY_REROLL; // dirty data
         }
@@ -107,7 +106,7 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
         if (state != STATE_OK)
         {
             // redo the loop
-            printf("bad state %d, redo\n", state);
+            INFO("bad state %d, redo\n", state);
             if (state == STATE_COPY_REROLL)
             {
                 // clean dirty data

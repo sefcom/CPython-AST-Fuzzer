@@ -27,7 +27,7 @@ int make_clz_inherit(ast_data_t *data, stmt_ty clz, PyObject *base)
     if (clz->v.ClassDef.bases != NULL && clz->v.ClassDef.bases->size > 0)
     {
         // TODO there maybe conflict between multiple base classes
-        fprintf(stderr, "don't support inherit multiple classes\n");
+        ERROR("don't support inherit multiple classes\n");
         return STATE_REROLL;
     }
     clz->v.ClassDef.bases = asdl_expr_seq_copy_add(clz->v.ClassDef.bases, data->arena, 1);

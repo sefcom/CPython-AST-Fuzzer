@@ -18,7 +18,7 @@ void get_dummy_ast(ast_data_t **data_ptr)
 	PyArena *arena = _PyArena_New();
 	if(arena == NULL)
 	{
-		fprintf(stderr, "arena is NULL\n");
+		error("arena is NULL\n");
 	}
 	init_ast_data(data_ptr, arena);
 	(*data_ptr)->mod = init_dummy_ast(*data_ptr);
@@ -29,7 +29,7 @@ void get_UAF2_ast(ast_data_t **data_ptr)
 	PyArena *arena = _PyArena_New();
 	if(arena == NULL)
 	{
-		fprintf(stderr, "arena is NULL\n");
+		error("arena is NULL\n");
 	}
 	init_ast_data(data_ptr, arena);
 	(*data_ptr)->mod = init_UAF2(*data_ptr);
@@ -48,7 +48,7 @@ size_t __attribute__((visibility("default"))) LLVMFuzzerCustomMutator(ast_data_t
 {
 	if (data == NULL || *data == NULL || size != sizeof(ast_data_t *))
 	{
-		printf("retrieving dummy ast, previous size=%d\n", size);
+		INFO("retrieving dummy ast, previous size=%d\n", size);
 		get_dummy_ast(data);
 		return sizeof(ast_data_t *);
 	}

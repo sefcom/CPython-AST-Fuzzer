@@ -42,3 +42,5 @@ file(GLOB SRC_FILES
 add_executable(pyFuzzerHelper ${SRC_FILES})
 target_link_libraries(pyFuzzerHelper PRIVATE pyFuzzer_common)
 set_target_properties(pyFuzzerHelper PROPERTIES PREFIX "" SUFFIX "")
+
+# target_compile_definitions(pyFuzzerHelper PRIVATE QUIET=1)
