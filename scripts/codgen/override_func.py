@@ -76,8 +76,8 @@ with open(sys.argv[1] + ".c", "w", encoding="utf-8") as f:
 
 
 HEADER_TEMPLATE = """
-#ifndef OVERRIDE_FUNC_H
-# define OVERRIDE_FUNC_H
+#ifndef OVERRIDE_FUNC_GEN_H
+# define OVERRIDE_FUNC_GEN_H
 #include "ast.h"
 extern overridable_func *overridable_funcs;
 extern overridable_func *overridable_funcs_raw;
