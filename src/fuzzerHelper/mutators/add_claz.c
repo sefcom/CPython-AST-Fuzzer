@@ -10,7 +10,7 @@ int add_clz_and_init(ast_data_t *data)
     body->typed_elements[body->size - 1] = _PyAST_Assign(
         _Py_asdl_expr_seq_new(1, data->arena),
         _PyAST_Call(
-            _PyAST_Name(gen_name_id(id), Load, LINE, data->arena),
+            NAME_L(gen_name_id(id)),
             NULL,
             NULL,
             LINE,
@@ -18,7 +18,7 @@ int add_clz_and_init(ast_data_t *data)
         NULL,
         LINE,
         data->arena);
-    body->typed_elements[body->size - 1]->v.Assign.targets->typed_elements[0] = _PyAST_Name(gen_name_id((data->gen_name_cnt)++), Store, LINE, data->arena);
+    body->typed_elements[body->size - 1]->v.Assign.targets->typed_elements[0] = NAME_S(gen_name_id((data->gen_name_cnt)++));
     data->locals_cnt++;
     return STATE_OK;
 }
@@ -33,7 +33,7 @@ int make_clz_inherit(ast_data_t *data, stmt_ty clz, PyObject *base)
         return STATE_REROLL;
     }
     clz->v.ClassDef.bases = asdl_expr_seq_copy_add(clz->v.ClassDef.bases, data->arena, 1);
-    clz->v.ClassDef.bases->typed_elements[clz->v.ClassDef.bases->size - 1] = _PyAST_Name(base, Load, LINE, data->arena);
+    clz->v.ClassDef.bases->typed_elements[clz->v.ClassDef.bases->size - 1] = NAME_L(base);
     data->inherited_clz_cnt++;
     data->plain_clz_cnt--;
     return STATE_OK;
@@ -46,7 +46,7 @@ int init_builtin_instance(ast_data_t *data, PyObject *type, asdl_stmt_seq **body
     body->typed_elements[body->size - 1] = _PyAST_Assign(
         _Py_asdl_expr_seq_new(1, data->arena),
         _PyAST_Call(
-            _PyAST_Name(type, Load, LINE, data->arena),
+            NAME_L(type),
             NULL,
             NULL,
             LINE,
@@ -54,7 +54,7 @@ int init_builtin_instance(ast_data_t *data, PyObject *type, asdl_stmt_seq **body
         NULL,
         LINE,
         data->arena);
-    body->typed_elements[body->size - 1]->v.Assign.targets->typed_elements[0] = _PyAST_Name(gen_name_id((data->gen_name_cnt)++), Store, LINE, data->arena);
+    body->typed_elements[body->size - 1]->v.Assign.targets->typed_elements[0] = NAME_S(gen_name_id((data->gen_name_cnt)++));
     data->locals_cnt++;
     return STATE_OK;
 }

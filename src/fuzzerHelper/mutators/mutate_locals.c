@@ -7,8 +7,8 @@ int operate_locals_global(ast_data_t *data){
     if(picked_local_id2 >= picked_local_id){
         picked_local_id2++;
     }
-    expr_ty picked_local = _PyAST_Name(get_locals(data, picked_local_id), Load, LINE, data->arena);
-    expr_ty picked_local2 = _PyAST_Name(get_locals(data, picked_local_id2), Load, LINE, data->arena);
+    expr_ty picked_local = NAME_L(get_locals(data, picked_local_id));
+    expr_ty picked_local2 = NAME_L(get_locals(data, picked_local_id2));
 
     int picked_op = rand() % (FloorDiv + USub + NotIn - 1) + 1;
     INFO("blend locals %d %d %d\n", picked_local_id, picked_local_id2, picked_op);
@@ -25,7 +25,7 @@ int operate_locals_global(ast_data_t *data){
     data->mod->v.Module.body = asdl_stmt_seq_copy_add(data->mod->v.Module.body, data->arena, 1);
     asdl_stmt_seq *body = data->mod->v.Module.body;
     body->typed_elements[body->size - 1] = _PyAST_Assign(_Py_asdl_expr_seq_new(1, data->arena), re, NULL, LINE, data->arena);
-    body->typed_elements[body->size - 1]->v.Assign.targets->typed_elements[0] = _PyAST_Name(gen_name_id((data->gen_name_cnt)++), Store, LINE, data->arena);
+    body->typed_elements[body->size - 1]->v.Assign.targets->typed_elements[0] = NAME_S(gen_name_id((data->gen_name_cnt)++));
     data->locals_cnt++;
     return STATE_OK;
 }

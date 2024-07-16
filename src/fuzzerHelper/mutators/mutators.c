@@ -116,6 +116,11 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
         // blend locals
         case 4:
         {
+            // this mutator may introduce runtime exception, so just reduce the chance
+            if(rand() % 2){
+                state = STATE_REROLL;
+                break;
+            }
             INFO("mutator: blend_locals\n");
             if (new_data->locals_cnt < 2)
             {

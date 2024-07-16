@@ -28,20 +28,20 @@ mod_ty init_UAF2(ast_data_t *data)
         NULL,
         arena);
     // optional type hints
-    expr_ty dict_type = _PyAST_Name(PyUnicode_FromString_Arena("dict", arena), Load, LINE, arena);
+    expr_ty dict_type = NAME_L(PyUnicode_FromString_Arena("dict", arena));
 
     args->args->typed_elements[0] = _PyAST_arg(PyUnicode_FromString_Arena("self", arena), NULL, NULL, LINE, arena);
     args->args->typed_elements[1] = _PyAST_arg(PyUnicode_FromString_Arena("other", arena), dict_type, NULL, LINE, arena);
 
     stmt_ty malicious_assign = _PyAST_Assign(
         _Py_asdl_expr_seq_new(1, arena),
-        _PyAST_Constant(PyLong_FromLong_Arena(0, arena), NULL, LINE, arena),
+        CONST(PyLong_FromLong_Arena(0, arena)),
         NULL,
         LINE,
         arena);
     malicious_assign->v.Assign.targets->typed_elements[0] = _PyAST_Subscript(
-        _PyAST_Name(PyUnicode_FromString_Arena("other", arena), Load, LINE, arena),
-        _PyAST_Constant(PyUnicode_FromString_Arena("items", arena), NULL, LINE, arena),
+        NAME_L(PyUnicode_FromString_Arena("other", arena)),
+        CONST(PyUnicode_FromString_Arena("items", arena)),
         Store,
         LINE,
         arena);
@@ -60,7 +60,7 @@ mod_ty init_UAF2(ast_data_t *data)
 
     expr_ty target_call = _PyAST_Compare(
         _PyAST_Attribute(
-            _PyAST_Name(PyUnicode_FromString_Arena("dict", arena), Load, LINE, arena),
+            NAME_L(PyUnicode_FromString_Arena("dict", arena)),
             PyUnicode_FromString_Arena("__dict__", arena),
             Load,
             LINE,
@@ -71,7 +71,7 @@ mod_ty init_UAF2(ast_data_t *data)
         arena);
     target_call->v.Compare.ops->typed_elements[0] = Eq;
     target_call->v.Compare.comparators->typed_elements[0] = _PyAST_Call(
-        _PyAST_Name(gen_name_id(clz_name), Load, LINE, arena),
+        NAME_L(gen_name_id(clz_name)),
         _Py_asdl_expr_seq_new(0, arena),
         _Py_asdl_keyword_seq_new(0, arena),
         LINE,
@@ -79,7 +79,7 @@ mod_ty init_UAF2(ast_data_t *data)
     stmt_ty target_call_wrapper = _PyAST_Expr(target_call, LINE, arena);
 
     expr_ty dict_obj = _PyAST_Call(
-        _PyAST_Name(PyUnicode_FromString_Arena("dict", arena), Load, LINE, arena),
+        NAME_L(PyUnicode_FromString_Arena("dict", arena)),
         _Py_asdl_expr_seq_new(0, arena),
         _Py_asdl_keyword_seq_new(0, arena),
         LINE,

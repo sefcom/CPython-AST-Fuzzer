@@ -1,7 +1,6 @@
 #include "mutators.h"
 #include "deepcopy.h"
 
-#define CONST(name) _PyAST_Constant(name, NULL, LINE, data->arena)
 #define LONG(name) PyLong_FromLong_Arena(name, data->arena)
 
 int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func)

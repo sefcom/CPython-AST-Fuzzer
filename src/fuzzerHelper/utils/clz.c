@@ -34,7 +34,7 @@ stmt_ty clz_inherited(ast_data_t *data, const char *base, PyObject *name){
     );
     data->inherited_clz_cnt++;
     stmt->v.ClassDef.body->typed_elements[0] = _PyAST_Pass(LINE, data->arena); // placeholder
-    stmt->v.ClassDef.bases->typed_elements[0] = _PyAST_Name(PyUnicode_FromString_Arena(base, data->arena), Load, LINE, data->arena);
+    stmt->v.ClassDef.bases->typed_elements[0] = NAME_L(PyUnicode_FromString_Arena(base, data->arena));
     return stmt;
 }
 
