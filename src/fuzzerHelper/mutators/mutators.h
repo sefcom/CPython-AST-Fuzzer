@@ -23,5 +23,6 @@ int add_rand_override(ast_data_t *data, stmt_ty clz, overridable_func func);
 
 // -- variables --
 int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func);
+int operate_locals_global(ast_data_t *data);
 
 #endif // MUTATORS_H

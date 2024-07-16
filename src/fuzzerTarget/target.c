@@ -32,12 +32,13 @@ void run_mod(const mod_ty mod)
     PyObject *result = PyEval_EvalCode(code, globals, locals);
     if(PyErr_Occurred()){
         PyErr_Print();
+    }else{
+        Py_XDECREF(result); // X for null check
     }
     _PyArena_Free(arena);
     Py_DECREF(locals);
     Py_DECREF(fname);
     Py_DECREF(code);
-    Py_DECREF(result);
 }
 
 extern global_info_t *data_backup;
@@ -47,7 +48,7 @@ void __attribute__((visibility("default"))) crash_handler(){
 	char str[19];
     unsigned int hash;
     HASH_VALUE(data_backup->ast_dump, strlen(data_backup->ast_dump), hash);
-	sprintf(str, "crash-%08d.txt", hash % 100000000);
+	sprintf(str, "crash-%08d.py", hash % 100000000);
 	FILE *f = fopen(str, "w");
 	fwrite(data_backup->ast_dump, 1, strlen(data_backup->ast_dump), f);
 	fclose(f);

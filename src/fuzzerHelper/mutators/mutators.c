@@ -33,7 +33,7 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
             new_data = copy_asd_data_t(*data);
             state = STATE_REROLL;
         }
-        switch (rand() % 5)
+        switch (rand() % 6)
         {
         // add class def and call init
         case 0:
@@ -113,8 +113,20 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
             }
         }
         break;
-        // modify function body
+        // blend locals
         case 4:
+        {
+            INFO("mutator: blend_locals\n");
+            if (new_data->locals_cnt < 2)
+            {
+                state = STATE_REROLL; // no locals defined yet, just re-roll
+                break;
+            }
+            state = operate_locals_global(new_data);
+        }
+        break;
+        // modify function body
+        case 5:
         {
             INFO("mutator: modify_func_body\n");
             if (new_data->func_cnt == 0)
