@@ -53,14 +53,20 @@ static PyObject **names = NULL;
 
 PyObject *gen_name_id(int id)
 {
+    if(unlikely(id >= CACHED_NAMES)){
+        char name[10];
+        sprintf(name, "name%d", id);
+        // TODO arena version?
+        return PyUnicode_FromString(name);
+    }
     return names[id];
 }
 
 void gen_name_init()
 {
-    names = (PyObject **)malloc(50 * sizeof(PyObject *));
+    names = (PyObject **)malloc(CACHED_NAMES * sizeof(PyObject *));
     char name[10];
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < CACHED_NAMES; i++)
     {
         sprintf(name, "name%d", i);
         names[i] = PyUnicode_FromString(name);

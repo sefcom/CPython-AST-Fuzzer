@@ -57,6 +57,7 @@ stmt_ty get_clz(asdl_stmt_seq *stmt_seq, int index, int plain_clz_required);
 
 // --- constants ---
 
+#define CACHED_NAMES 50
 #define GEN_CONST(name) extern PyObject *name##_OBJ
 GEN_CONST(KEYS);
 GEN_CONST(LEN);
