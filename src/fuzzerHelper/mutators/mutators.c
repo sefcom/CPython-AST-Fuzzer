@@ -129,8 +129,7 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
                 state = STATE_REROLL;
                 break;
             }
-            // int picked_type = rand() % builtin_type_cnt;
-            int picked_type = CLZ_DICT;
+            int picked_type = rand() % builtin_type_cnt;
 
             switch (picked_type)
             {

@@ -5,15 +5,8 @@ mod_ty init_dummy_ast(ast_data_t *data)
 {
     PyArena *arena = data->arena;
     // dummy AST
-    // print("Hellow world")
-    expr_ty call_name = _PyAST_Name(PyUnicode_FromString_Arena("print", arena), Load, LINE, arena);
-    asdl_expr_seq *call_args = _Py_asdl_expr_seq_new(1, arena);
-    call_args->typed_elements[0] = _PyAST_Constant(PyUnicode_FromString_Arena("Hello world", arena), NULL, LINE, arena);
-    stmt_ty call = _PyAST_Expr(
-        _PyAST_Call(call_name, call_args, NULL, LINE, arena),
-        LINE, arena);
     asdl_stmt_seq *body = _Py_asdl_stmt_seq_new(1, arena);
-    body->elements[0] = call;
+    body->elements[0] = _PyAST_Pass(LINE, arena);
 
     mod_ty mod = _PyAST_Module(body, NULL, arena);
     assert(!(mod == NULL || !_PyAST_Validate(mod)));

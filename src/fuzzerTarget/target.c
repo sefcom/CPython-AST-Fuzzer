@@ -51,6 +51,7 @@ void __attribute__((visibility("default"))) crash_handler(){
 	FILE *f = fopen(str, "w");
 	fwrite(data_backup->ast_dump, 1, strlen(data_backup->ast_dump), f);
 	fclose(f);
+    INFO("AST=%s\n", data_backup->ast_dump);
 }
 
 int __attribute__((visibility("default"))) LLVMFuzzerTestOneInput(const ast_data_t **data_ptr, size_t size) {
@@ -60,7 +61,7 @@ int __attribute__((visibility("default"))) LLVMFuzzerTestOneInput(const ast_data
         return -1;
     }
     dump_ast(*data_ptr, data_backup->ast_dump, AST_DUMP_BUF_SIZE);
-    INFO("ast=%s\n", data_backup->ast_dump);
+    // INFO("ast=%s\n", data_backup->ast_dump);
     run_mod((*data_ptr)->mod);
     return 0;  // Values other than 0 and -1 are reserved for future use.
 }

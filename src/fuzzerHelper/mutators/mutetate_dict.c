@@ -34,7 +34,7 @@ int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func)
         {
             INFO("assign w/ self\n");
             asdl_arg_seq *args = picked_func->v.FunctionDef.args->args;
-            if (args->size == 1 || PyUnicode_CompareWithASCIIString(args->typed_elements[0]->arg, "self") != 0)
+            if (args->size <= 1 || PyUnicode_CompareWithASCIIString(args->typed_elements[0]->arg, "self") != 0)
             {
                 state = STATE_REROLL;
                 break;
