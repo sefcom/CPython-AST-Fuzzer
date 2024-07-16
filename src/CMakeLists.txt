@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 project(pyFuzzer VERSION 0.1 LANGUAGES C)
-set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD 23)
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 add_library(pyFuzzer_common INTERFACE)
 
@@ -16,7 +16,7 @@ target_include_directories(pyFuzzer_common INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/common
     ${CMAKE_CURRENT_SOURCE_DIR}/codgen
     $ENV{PYTHON_PATH}/include/python${CPYTHON_VER}
-    $ENV{PYTHON_PATH}/include/python${CPYTHON_VER}/internal # idk why Python3_INCLUDE_DIR is empty and Python3_INCLUDE_DIRS only contain one path
+    $ENV{PYTHON_PATH}/include/python${CPYTHON_VER}/internal
 )
 # with debug symbol
 target_compile_definitions(pyFuzzer_common INTERFACE PYTHON_VER=${PYTHON_VER})

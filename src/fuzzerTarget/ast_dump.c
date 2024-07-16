@@ -2,6 +2,7 @@
 
 static PyObject *ast_module = NULL;
 static PyObject *ast_dump_func = NULL;
+static PyObject *ast_dump_func_fallback = NULL;
 
 void dump_ast(const ast_data_t *data, char *buf, size_t max_len)
 {
@@ -26,6 +27,14 @@ void dump_ast(const ast_data_t *data, char *buf, size_t max_len)
 			PANIC("Cannot find ast_dump\n");
 		}
 	}
+	if(ast_dump_func_fallback == NULL)
+	{
+		ast_dump_func_fallback = PyObject_GetAttrString(ast_module, "dump");
+		if (ast_dump_func_fallback == NULL)
+		{
+			PANIC("Cannot find ast_dump_fallback\n");
+		}
+	}
 	// Warning Trying to unparse a highly complex expression would result with RecursionError.
 	PyObject *ast_str = PyObject_CallOneArg(ast_dump_func, code);
 	// printf("AST=%s\n", PyUnicode_AsUTF8(ast_str));
@@ -33,7 +42,13 @@ void dump_ast(const ast_data_t *data, char *buf, size_t max_len)
 	if (PyErr_Occurred())
 	{
 		PyErr_Print();
-		PANIC("Failed to dump ast\n");
+		PyErr_Clear();
+		ast_str = PyObject_CallOneArg(ast_dump_func_fallback, code);
+		if (PyErr_Occurred())
+		{
+			PyErr_Print();
+			PANIC("Failed to dump ast\n");
+		}
 	}
 	const char *str = PyUnicode_AsUTF8AndSize(ast_str, &len);
 	if (len >= max_len)
