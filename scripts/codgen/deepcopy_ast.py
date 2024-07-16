@@ -69,8 +69,7 @@ def parse_struct(start: int, codes: list[str], name: str = ""):
             if name is None:
                 parse_code += f"re->{n} = {t}_copy(val->{n}, arena);\n"
             else:
-                parse_code += f"re->v.{name}.{n} = {
-                    t}_copy(val->v.{name}.{n}, arena);\n"
+                parse_code += f"re->v.{name}.{n} = {t}_copy(val->v.{name}.{n}, arena);\n"
     parse_code = parse_code.replace("\n", "\n" + " " * 3)
     if name is not None:
         parse_code = f"case {name}_kind:{parse_code}break;"

@@ -2,10 +2,9 @@
 
 // TODO keywords, mutiple base classes, decorators
 
-int plain_clz(ast_data_t *data, stmt_ty *stmt){
-    int id = (data->gen_name_cnt)++;
-    *stmt = _PyAST_ClassDef(
-        gen_name_id(id),
+stmt_ty plain_clz(ast_data_t *data, PyObject *name){
+    stmt_ty stmt = _PyAST_ClassDef(
+        name,
         NULL,
         NULL,
         _Py_asdl_stmt_seq_new(1, data->arena), // body is required
@@ -16,14 +15,13 @@ int plain_clz(ast_data_t *data, stmt_ty *stmt){
         LINE,
         data->arena
     );
-    (*stmt)->v.ClassDef.body->typed_elements[0] = _PyAST_Pass(LINE, data->arena); // placeholder
+    stmt->v.ClassDef.body->typed_elements[0] = _PyAST_Pass(LINE, data->arena); // placeholder
     data->plain_clz_cnt++;
-    return id;
+    return stmt;
 }
-int clz_inherited(ast_data_t *data, const char *base, stmt_ty *stmt){
-    int id = (data->gen_name_cnt)++;
-    *stmt = _PyAST_ClassDef(
-        gen_name_id(id),
+stmt_ty clz_inherited(ast_data_t *data, const char *base, PyObject *name){
+    stmt_ty stmt = _PyAST_ClassDef(
+        name,
         _Py_asdl_expr_seq_new(1, data->arena),
         NULL,
         _Py_asdl_stmt_seq_new(1, data->arena), // body is required,
@@ -35,9 +33,9 @@ int clz_inherited(ast_data_t *data, const char *base, stmt_ty *stmt){
         data->arena
     );
     data->inherited_clz_cnt++;
-    (*stmt)->v.ClassDef.body->typed_elements[0] = _PyAST_Pass(LINE, data->arena); // placeholder
-    (*stmt)->v.ClassDef.bases->typed_elements[0] = _PyAST_Name(PyUnicode_FromString_Arena(base, data->arena), Load, LINE, data->arena);
-    return id;
+    stmt->v.ClassDef.body->typed_elements[0] = _PyAST_Pass(LINE, data->arena); // placeholder
+    stmt->v.ClassDef.bases->typed_elements[0] = _PyAST_Name(PyUnicode_FromString_Arena(base, data->arena), Load, LINE, data->arena);
+    return stmt;
 }
 
 int get_clz_count(asdl_stmt_seq *stmt_seq, int *plain_clz)
@@ -76,6 +74,7 @@ stmt_ty get_clz(asdl_stmt_seq *stmt_seq, int index, int plain_clz_required)
             cnt++;
         }
     }
+    PANIC("get_clz: index out of range %d/%d\n", cnt, index);
     return NULL;
 }
 
@@ -91,5 +90,6 @@ stmt_ty find_clz(asdl_stmt_seq *stmt_seq, PyObject *clz_name)
             }
         }
     }
+    PANIC("find_clz: class %s not found\n", PyUnicode_AsUTF8(clz_name));
     return NULL;
 }

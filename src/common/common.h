@@ -19,6 +19,7 @@ typedef struct{
     int plain_clz_cnt;
     int inherited_clz_cnt;
     int func_cnt;
+    int locals_cnt;
 } ast_data_t;
 
 typedef struct{

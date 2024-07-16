@@ -25,14 +25,18 @@ int add_rand_override(ast_data_t *data, stmt_ty clz, overridable_func func)
         data->arena);
     assert(args != NULL);
     for(int i = 0; i < func.args_size; i++){
+        if(i == 0 && (func.arg_type & HAS_SELF)){
+            args->args->typed_elements[i] = _PyAST_arg(SELF_OBJ, NULL, NULL, LINE, data->arena);
+            continue;
+        }
         args->args->typed_elements[i] = _PyAST_arg(gen_name_id((data->gen_name_cnt)++), NULL, NULL, LINE, data->arena);
     }
     if(func.arg_type & HAS_KWARGS){
-        args->kwarg = _PyAST_arg(PyUnicode_FromString_Arena("kwargs", data->arena), NULL, NULL, LINE, data->arena);
+        args->kwarg = _PyAST_arg(KWARGS_OBJ, NULL, NULL, LINE, data->arena);
     }
     if(func.arg_type & HAS_VARARGS){
-        args->vararg = _PyAST_arg(PyUnicode_FromString_Arena("varargs", data->arena), NULL, NULL, LINE, data->arena);
+        args->vararg = _PyAST_arg(VARARGS_OBJ, NULL, NULL, LINE, data->arena);
     }
-    func_w_name(data, func.name, &(clz->v.ClassDef.body->typed_elements[clz->v.ClassDef.body->size - 1]), args);
+    clz->v.ClassDef.body->typed_elements[clz->v.ClassDef.body->size - 1] = func_w_name(data, func.name, args);
     return STATE_OK;
 }

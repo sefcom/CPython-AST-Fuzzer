@@ -1,5 +1,6 @@
 #include "mutators.h"
 #include "deepcopy.h"
+#include "override_func.h"
 
 ast_data_t *copy_asd_data_t(ast_data_t *src)
 {
@@ -15,6 +16,7 @@ ast_data_t *copy_asd_data_t(ast_data_t *src)
     dst->func_cnt = src->func_cnt;
     dst->plain_clz_cnt = src->plain_clz_cnt;
     dst->inherited_clz_cnt = src->inherited_clz_cnt;
+    dst->locals_cnt = src->locals_cnt;
     return dst;
 }
 
@@ -31,7 +33,7 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
             new_data = copy_asd_data_t(*data);
             state = STATE_REROLL;
         }
-        switch (rand() % 4)
+        switch (rand() % 5)
         {
         // add class def and call init
         case 0:
@@ -90,9 +92,60 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
         // init a builtin type instance
         case 3:
         {
-            INFO("mutator: init_builtin_instance\n");
             int picked_type = rand() % builtin_type_cnt;
-            state = init_builtin_instance(new_data, builtin_clz_obj[picked_type]);
+            int global = rand() % 2;
+            if (global)
+            {
+                INFO("mutator: init_builtin_instance in global\n");
+                state = init_builtin_instance(new_data, builtin_clz_obj[picked_type], &(new_data->mod->v.Module.body));
+            }
+            else
+            {
+                INFO("mutator: init_builtin_instance in func\n");
+                if (new_data->func_cnt == 0)
+                {
+                    state = STATE_REROLL; // no functions defined yet, just re-roll
+                    break;
+                }
+                int picked_func_id = rand() % new_data->func_cnt;
+                stmt_ty picked_func = get_func(new_data, picked_func_id);
+                state = init_builtin_instance(new_data, builtin_clz_obj[picked_type], &(picked_func->v.FunctionDef.body));
+            }
+        }
+        break;
+        // modify function body
+        case 4:
+        {
+            INFO("mutator: modify_func_body\n");
+            if (new_data->func_cnt == 0)
+            {
+                state = STATE_REROLL; // no functions defined yet, just re-roll
+                break;
+            }
+            int picked_func_id = rand() % new_data->func_cnt;
+            stmt_ty picked_func = get_func(new_data, picked_func_id);
+            if (picked_func->v.FunctionDef.args->args->size == 0)
+            {
+                state = STATE_REROLL;
+                break;
+            }
+            // int picked_type = rand() % builtin_type_cnt;
+            int picked_type = CLZ_DICT;
+
+            switch (picked_type)
+            {
+            case CLZ_DICT:
+            {
+                INFO("CLZ_DICT w/ picked_func: %d/%d\n", picked_func_id, new_data->func_cnt);
+                state = mutate_dict_entry(new_data, picked_func);
+                break;
+            }
+            default:
+            {
+                state = STATE_REROLL;
+                break;
+            }
+            }
         }
         break;
         }

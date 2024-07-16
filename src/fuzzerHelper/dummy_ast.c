@@ -1,4 +1,5 @@
 #include "helper.h"
+#include "override_func.h"
 
 mod_ty init_dummy_ast(ast_data_t *data)
 {
@@ -54,12 +55,13 @@ mod_ty init_UAF2(ast_data_t *data)
 
     stmt_ty malicious_eq_func;
     assert(override_func("__eq__") != NULL);
-    func_w_name(data, override_func("__eq__")->name, &malicious_eq_func, args);
+    malicious_eq_func = func_w_name(data, override_func("__eq__")->name, args);
     malicious_eq_func->v.FunctionDef.body = _Py_asdl_stmt_seq_new(1, arena);
     malicious_eq_func->v.FunctionDef.body->elements[0] = malicious_assign;
 
     stmt_ty class_def;
-    int clz_name = plain_clz(data, &class_def);
+    int clz_name = (data->gen_name_cnt)++;
+    class_def = plain_clz(data, gen_name_id(clz_name));
     class_def->v.ClassDef.body = _Py_asdl_stmt_seq_new(1, arena);
     class_def->v.ClassDef.body->elements[0] = malicious_eq_func;
 

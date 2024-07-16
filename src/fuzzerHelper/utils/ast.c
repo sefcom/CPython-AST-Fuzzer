@@ -1,4 +1,5 @@
 #include "ast.h"
+#include "override_func.h"
 
 PyObject *PyUnicode_FromString_Arena(const char *s, PyArena *arena)
 {
@@ -12,7 +13,8 @@ PyObject *PyUnicode_FromString_Arena(const char *s, PyArena *arena)
 
 PyObject *PyLong_Copy_Arena(PyObject *s, PyArena *arena)
 {
-    if(s == NULL){
+    if (s == NULL)
+    {
         return NULL;
     }
     PyObject *re = (PyObject *)PyLong_FromLongLong(PyLong_AsLongLong(s));
@@ -24,7 +26,8 @@ PyObject *PyLong_Copy_Arena(PyObject *s, PyArena *arena)
 
 PyObject *PyUnicode_Copy_Arena(PyObject *s, PyArena *arena)
 {
-    if(s == NULL){
+    if (s == NULL)
+    {
         return NULL;
     }
     Py_ssize_t length = PyUnicode_GET_LENGTH(s);
@@ -76,9 +79,82 @@ overridable_func *override_func(const char *name)
     return s;
 }
 
-static PyObject **types = NULL;
-
 stmt_ty stmt(expr_ty expr, PyArena *arena)
 {
     return _PyAST_Expr(expr, LINE, arena);
+}
+
+PyObject *get_locals_internal(int *index, asdl_stmt_seq *body_raw)
+{
+    for (int i = 0; i < body_raw->size; i++)
+    {
+        stmt_ty ele = body_raw->typed_elements[i];
+        PyObject *re;
+        switch (ele->kind)
+        {
+        case Assign_kind:
+            if (*index == 0)
+            {
+                return ele->v.Assign.targets->typed_elements[0]->v.Name.id;
+            }
+            *index = *index - 1;
+            break;
+        case FunctionDef_kind:
+            re = get_locals_internal(index, ele->v.FunctionDef.body);
+            if (re != NULL)
+            {
+                return re;
+            }
+            break;
+        case ClassDef_kind:
+            re = get_locals_internal(index, ele->v.ClassDef.body);
+            if (re != NULL)
+            {
+                return re;
+            }
+            break;
+        case If_kind:
+            re = get_locals_internal(index, ele->v.If.body);
+            if (re != NULL)
+            {
+                return re;
+            }
+            break;
+        case While_kind:
+            re = get_locals_internal(index, ele->v.While.body);
+            if (re != NULL)
+            {
+                return re;
+            }
+            break;
+        case For_kind:
+            re = get_locals_internal(index, ele->v.For.body);
+            if (re != NULL)
+            {
+                return re;
+            }
+            break;
+        case With_kind:
+            re = get_locals_internal(index, ele->v.With.body);
+            if (re != NULL)
+            {
+                return re;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    return NULL;
+}
+
+PyObject *get_locals(ast_data_t *data, int index)
+{
+    int idx = index;
+    PyObject *re = get_locals_internal(&idx, data->mod->v.Module.body);
+    if (re == NULL)
+    {
+        PANIC("no locals found: req %d, remaining %d\n", index, idx);
+    }
+    return re;
 }

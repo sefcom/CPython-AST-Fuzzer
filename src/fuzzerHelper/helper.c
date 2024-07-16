@@ -4,12 +4,8 @@
 void init_ast_data(ast_data_t **buf, PyArena *arena)
 {
 	ast_data_t *data = (ast_data_t *)_PyArena_Malloc(arena, sizeof(ast_data_t));
-	data->gen_name_cnt = 0;
-	data->plain_clz_cnt = 0;
-	data->inherited_clz_cnt = 0;
-	data->func_cnt = 0;
+	memset(data, 0, sizeof(ast_data_t));
 	data->arena = arena;
-	data->mod = NULL;
 	*buf = data;
 }
 
@@ -66,5 +62,6 @@ int __attribute__((visibility("default"))) LLVMFuzzerInitialize(int *argc, char 
     Py_Initialize();
 	gen_name_init();
 	override_name_init();
+	init_constants();
     return 0;
 }
