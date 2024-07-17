@@ -51,7 +51,8 @@ static PyObject **names = NULL;
 
 PyObject *gen_name_id(int id)
 {
-    if(unlikely(id >= CACHED_NAMES)){
+    if (unlikely(id >= CACHED_NAMES))
+    {
         char name[10];
         sprintf(name, "name%d", id);
         // TODO arena version?
@@ -97,7 +98,8 @@ PyObject *get_locals_internal(int *index, asdl_stmt_seq *body_raw)
         switch (ele->kind)
         {
         case Assign_kind:
-            if(ele->v.Assign.targets->size == 0 || ele->v.Assign.targets->typed_elements[0]->kind != Name_kind){
+            if (ele->v.Assign.targets->size == 0 || ele->v.Assign.targets->typed_elements[0]->kind != Name_kind)
+            {
                 break;
             }
             if (*index == 0)
@@ -106,48 +108,12 @@ PyObject *get_locals_internal(int *index, asdl_stmt_seq *body_raw)
             }
             *index = *index - 1;
             break;
-        case FunctionDef_kind:
-            re = get_locals_internal(index, ele->v.FunctionDef.body);
-            if (re != NULL)
-            {
-                return re;
-            }
-            break;
-        case ClassDef_kind:
-            re = get_locals_internal(index, ele->v.ClassDef.body);
-            if (re != NULL)
-            {
-                return re;
-            }
-            break;
-        case If_kind:
-            re = get_locals_internal(index, ele->v.If.body);
-            if (re != NULL)
-            {
-                return re;
-            }
-            break;
-        case While_kind:
-            re = get_locals_internal(index, ele->v.While.body);
-            if (re != NULL)
-            {
-                return re;
-            }
-            break;
-        case For_kind:
-            re = get_locals_internal(index, ele->v.For.body);
-            if (re != NULL)
-            {
-                return re;
-            }
-            break;
-        case With_kind:
-            re = get_locals_internal(index, ele->v.With.body);
-            if (re != NULL)
-            {
-                return re;
-            }
-            break;
+            RECURSIVE_CASE(FunctionDef, get_locals_internal, , )
+            RECURSIVE_CASE(ClassDef, get_locals_internal, , )
+            RECURSIVE_CASE(If, get_locals_internal, , )
+            RECURSIVE_CASE(While, get_locals_internal, , )
+            RECURSIVE_CASE(For, get_locals_internal, , )
+            RECURSIVE_CASE(With, get_locals_internal, , )
         default:
             break;
         }

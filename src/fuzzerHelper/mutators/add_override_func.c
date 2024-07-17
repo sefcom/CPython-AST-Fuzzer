@@ -130,3 +130,50 @@ int feed_func_locals(ast_data_t *data, stmt_ty func, stmt_ty base_clz)
     data->mod->v.Module.body->typed_elements[data->mod->v.Module.body->size - 1] = ass;
     return STATE_OK;
 }
+
+int func_variable_lifetime(ast_data_t *data, stmt_ty func)
+{
+    int local_cnt = 0;
+    for (int i = 0; func->v.FunctionDef.body->size; i++)
+    {
+        stmt_ty ele = func->v.FunctionDef.body->typed_elements[i];
+        if (ele->kind == Assign_kind && ele->v.Assign.targets->size > 0 && ele->v.Assign.targets->typed_elements[0]->kind == Name_kind)
+        {
+            local_cnt++;
+        }
+    }
+    if (local_cnt == 0)
+    {
+        return STATE_REROLL;
+    }
+    int picked_local_id = rand() % local_cnt;
+    PyObject *name = NULL;
+    for (int i = 0; func->v.FunctionDef.body->size; i++)
+    {
+        stmt_ty ele = func->v.FunctionDef.body->typed_elements[i];
+        if (ele->kind == Assign_kind && ele->v.Assign.targets->size > 0 && ele->v.Assign.targets->typed_elements[0]->kind == Name_kind)
+        {
+            if (picked_local_id == 0)
+            {
+                name = ele->v.Assign.targets->typed_elements[0]->v.Name.id;
+                break;
+            }
+            picked_local_id--;
+        }
+    }
+    assert(Global_kind + 1 == Nonlocal_kind);
+    int picked_kind = rand() % 2 + Global_kind;
+    // structure of global and nonlocal is the same
+    if(func->v.FunctionDef.body->typed_elements[0]->kind == picked_kind){
+        stmt_ty old = func->v.FunctionDef.body->typed_elements[0];
+        old->v.Global.names = asdl_identifier_seq_copy_add(old->v.Global.names, data->arena, 1);
+        old->v.Global.names->typed_elements[old->v.Global.names->size - 1] = name;
+    }else{
+        stmt_ty re = _PyAST_Global(_Py_asdl_identifier_seq_new(1, data->arena), LINE, data->arena);
+        re->kind = picked_kind;
+        re->v.Global.names->typed_elements[0] = name;
+        func->v.FunctionDef.body = asdl_stmt_seq_copy_add_front(func->v.FunctionDef.body, data->arena, 1);
+        func->v.FunctionDef.body->typed_elements[0] = re;
+    }
+    return STATE_OK;
+}

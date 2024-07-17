@@ -33,7 +33,7 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
             new_data = copy_asd_data_t(*data);
             state = STATE_REROLL;
         }
-        switch (rand() % 7)
+        switch (rand() % 8)
         {
         // add class def and call init
         case 0:
@@ -186,6 +186,19 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
             stmt_ty base_clz = NULL;
             stmt_ty func = get_func_w_base_clz(new_data, picked_func_id, &base_clz);
             state = feed_func_locals(new_data, func, base_clz);
+            break;
+        }
+        // add random lifetime annotation
+        case 7:
+        {
+            INFO("mutator: add_lifetime_annotation\n");
+            if(new_data->func_cnt == 0){
+                state = STATE_REROLL;
+                break;
+            }
+            int picked_func_id = rand() % new_data->func_cnt;
+            stmt_ty func = get_func(new_data, picked_func_id);
+            state = func_variable_lifetime(new_data, func);
             break;
         }
         }

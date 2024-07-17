@@ -21,6 +21,7 @@ int init_builtin_instance(ast_data_t *data, PyObject *type, asdl_stmt_seq **body
 // -- function --
 int add_rand_override(ast_data_t *data, stmt_ty clz, overridable_func func);
 int feed_func_locals(ast_data_t *data, stmt_ty func, stmt_ty base_clz);
+int func_variable_lifetime(ast_data_t *data, stmt_ty func);
 
 // -- variables --
 int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func);

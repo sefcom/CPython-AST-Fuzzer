@@ -36,6 +36,7 @@ PyObject *constant_copy(PyObject *val, PyArena *arena)
 }
 
 #define ASDL_SEQ_COPY_COMBINED(type) \
+    ASDL_SEQ_COPY_ADD_FRONT(type)    \
     ASDL_SEQ_COPY_ADD(type)          \
     ASDL_SEQ_COPY(type)
 
@@ -56,6 +57,25 @@ PyObject *constant_copy(PyObject *val, PyArena *arena)
             }                                                                                             \
         }                                                                                                 \
         return re;                                                                                        \
+    }
+
+#define ASDL_SEQ_COPY_ADD_FRONT(type)                                                                           \
+    asdl_##type##_seq *asdl_##type##_seq##_copy_add_front(asdl_##type##_seq *seq, PyArena *arena, int add_size) \
+    {                                                                                                           \
+        asdl_##type##_seq *re;                                                                                  \
+        if (seq == NULL)                                                                                        \
+        {                                                                                                       \
+            re = _Py_##asdl_##type##_seq##_new(add_size, arena);                                                \
+        }                                                                                                       \
+        else                                                                                                    \
+        {                                                                                                       \
+            re = _Py_##asdl_##type##_seq##_new(seq->size + add_size, arena);                                    \
+            for (int i = 1; i < seq->size + 1; i++)                                                             \
+            {                                                                                                   \
+                re->typed_elements[i] = type##_copy(seq->typed_elements[i], arena);                             \
+            }                                                                                                   \
+        }                                                                                                       \
+        return re;                                                                                              \
     }
 
 #define ASDL_SEQ_COPY(type)                                                             \
