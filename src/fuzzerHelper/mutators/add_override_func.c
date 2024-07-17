@@ -120,6 +120,13 @@ int feed_func_locals(ast_data_t *data, stmt_ty func, stmt_ty base_clz)
         call->v.Call.args->typed_elements[i] = NAME_L(get_locals(data, picked_local));
     }
     data->mod->v.Module.body = asdl_stmt_seq_copy_add(data->mod->v.Module.body, data->arena, 1);
-    data->mod->v.Module.body->typed_elements[data->mod->v.Module.body->size - 1] = stmt(call, data->arena);
+    stmt_ty ass = _PyAST_Assign(
+        _Py_asdl_expr_seq_new(1, data->arena),
+        call,
+        NULL,
+        LINE,
+        data->arena);
+    ass->v.Assign.targets->typed_elements[0] = NAME_S(gen_name_id(data->gen_name_cnt++));
+    data->mod->v.Module.body->typed_elements[data->mod->v.Module.body->size - 1] = ass;
     return STATE_OK;
 }
