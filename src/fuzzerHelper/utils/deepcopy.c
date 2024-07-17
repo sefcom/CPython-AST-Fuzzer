@@ -72,7 +72,7 @@ PyObject *constant_copy(PyObject *val, PyArena *arena)
             re = _Py_##asdl_##type##_seq##_new(seq->size + add_size, arena);                                    \
             for (int i = 1; i < seq->size + 1; i++)                                                             \
             {                                                                                                   \
-                re->typed_elements[i] = type##_copy(seq->typed_elements[i], arena);                             \
+                re->typed_elements[i] = type##_copy(seq->typed_elements[i - 1], arena);                         \
             }                                                                                                   \
         }                                                                                                       \
         return re;                                                                                              \

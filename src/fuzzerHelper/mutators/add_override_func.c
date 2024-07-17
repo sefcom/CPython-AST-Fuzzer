@@ -80,7 +80,8 @@ int feed_func_locals(ast_data_t *data, stmt_ty func, stmt_ty base_clz)
             asdl_stmt_seq *body = data->mod->v.Module.body;
             for (int i = 0; i < body->size; i++)
             {
-                if (body->typed_elements[i]->kind == ClassDef_kind && body->typed_elements[i] == base_clz)
+                stmt_ty ele = body->typed_elements[i];
+                if (ele->kind == ClassDef_kind && ele == base_clz)
                 {
                     assert(i + 1 < body->size);
                     assert(body->typed_elements[i + 1]->kind == Assign_kind);

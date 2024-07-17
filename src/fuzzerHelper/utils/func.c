@@ -34,7 +34,7 @@ stmt_ty get_func_internal(int *index, asdl_stmt_seq *stmt_seq, stmt_ty *base)
             }
             (*index)--;
             break;
-            RECURSIVE_CASE(ClassDef, get_func_internal, COMMA base, if (base != NULL && *base == NULL) { *base = re; })
+            RECURSIVE_CASE(ClassDef, get_func_internal, COMMA base, if (base != NULL && *base == NULL) { *base = ele; })
             RECURSIVE_CASE(If, get_func_internal, COMMA base, )
             RECURSIVE_CASE(While, get_func_internal, COMMA base, )
             RECURSIVE_CASE(For, get_func_internal, COMMA base, )
