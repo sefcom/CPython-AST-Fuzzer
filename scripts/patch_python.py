@@ -67,11 +67,12 @@ patches = []
 for d in instrument_dirs:
     d = PYTHON_PATH / d
     assert (d.exists())
-    for file in d.rglob("*.c"):
+    # don't do it recursively
+    for file in d.glob("*.c"):
         file_path = file.relative_to(PYTHON_PATH).as_posix().removesuffix(".c")
         patches.append(with_libfuzzer.replace(
             "IN_NAME", file_path + ".c").replace("OUT_NAME", file_path + ".o"))
-        print("instrument", file_path)
+        print("instrument", file_path + ".c")
 
 patches += [""]
 

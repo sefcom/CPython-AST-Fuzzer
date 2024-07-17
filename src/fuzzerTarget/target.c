@@ -58,17 +58,11 @@ int __attribute__((visibility("default"))) LLVMFuzzerTestOneInput(const ast_data
         PANIC("Failed to create arena\n");
     }
     PyObject *code = (PyObject *)_PyAST_Compile((*data_ptr)->mod, fname, &flag, -1, arena);
-    if(PyErr_Occurred()){
-        PyErr_Print();
-        _PyArena_Free(arena);
-        ERROR("Failed to compile AST\n");
-        return -1;
-    }
-    if (code == NULL)
-    {
+    if(code == NULL || PyErr_Occurred()){
         if(PyErr_Occurred()) PyErr_Print();
         _PyArena_Free(arena);
         ERROR("Failed to compile AST\n");
+        // bad data so we will not want to add it to corpus
         return -1;
     }
     dump_ast(*data_ptr, data_backup->ast_dump, AST_DUMP_BUF_SIZE);
