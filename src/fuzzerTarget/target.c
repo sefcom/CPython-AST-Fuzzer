@@ -66,7 +66,7 @@ int __attribute__((visibility("default"))) LLVMFuzzerTestOneInput(const ast_data
         return -1;
     }
     dump_ast(*data_ptr, data_backup->ast_dump, AST_DUMP_BUF_SIZE);
-    // INFO("ast=%s\n", data_backup->ast_dump);
+    INFO("ast=%s\n", data_backup->ast_dump);
     run_mod(code);
     return 0;  // Values other than 0 and -1 are reserved for future use.
 }

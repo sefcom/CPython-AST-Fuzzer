@@ -49,6 +49,7 @@ stmt_ty find_clz(asdl_stmt_seq *stmt_seq, PyObject *clz_name);
 // -- function helpers --
 stmt_ty func_w_name(ast_data_t *data, PyObject *name, arguments_ty args);
 stmt_ty get_func(ast_data_t *data, int index);
+stmt_ty get_func_w_base_clz(ast_data_t *data, int index, stmt_ty *base);
 
 // --- mutator helpers ---
 

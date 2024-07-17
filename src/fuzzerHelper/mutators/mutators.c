@@ -33,15 +33,15 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
             new_data = copy_asd_data_t(*data);
             state = STATE_REROLL;
         }
-        switch (rand() % 6)
+        switch (rand() % 7)
         {
         // add class def and call init
         case 0:
         {
             INFO("mutator: add_clz_and_init\n");
             state = add_clz_and_init(new_data);
+            break;
         }
-        break;
         // inherit a plain class from random base class
         case 1:
         {
@@ -57,8 +57,8 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
             assert(picked_clz != NULL);
             int picked_clz_base = rand() % builtin_type_cnt;
             state = make_clz_inherit(new_data, picked_clz, builtin_clz_obj[picked_clz_base]);
+            break;
         }
-        break;
         // add random override function
         case 2:
         {
@@ -86,9 +86,13 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
                     }
                 }
             }
-            state = add_rand_override(new_data, picked_clz, rand_override_func(clz_base_id));
+            overridable_func picked_func = rand_override_func(clz_base_id);
+            state = add_rand_override(new_data, picked_clz, picked_func);
+            if(state == 0 && new_data->locals_cnt > picked_func.args_size - (picked_func.arg_type & HAS_SELF)){
+                state = feed_func_locals(new_data, get_func(new_data, new_data->func_cnt - 1), picked_clz);
+            }
+            break;
         }
-        break;
         // init a builtin type instance
         case 3:
         {
@@ -111,13 +115,14 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
                 stmt_ty picked_func = get_func(new_data, picked_func_id);
                 state = init_builtin_instance(new_data, builtin_clz_obj[picked_type], &(picked_func->v.FunctionDef.body));
             }
+            break;
         }
-        break;
         // blend locals
         case 4:
         {
             // this mutator may introduce runtime exception, so just reduce the chance
-            if(rand() % 2){
+            if (rand() % 2)
+            {
                 state = STATE_REROLL;
                 break;
             }
@@ -128,8 +133,8 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
                 break;
             }
             state = operate_locals_global(new_data);
+            break;
         }
-        break;
         // modify function body
         case 5:
         {
@@ -162,8 +167,23 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
                 break;
             }
             }
+            break;
         }
-        break;
+        // feed random function with random locals
+        case 6:
+        {
+            INFO("mutator: feed_func_locals\n");
+            if (new_data->func_cnt == 0 || new_data->locals_cnt == 0)
+            {
+                state = STATE_REROLL; // no functions or locals defined yet, just re-roll
+                break;
+            }
+            int picked_func_id = rand() % new_data->func_cnt;
+            stmt_ty base_clz = NULL;
+            stmt_ty func = get_func_w_base_clz(new_data, picked_func_id, &base_clz);
+            state = feed_func_locals(new_data, func, base_clz);
+            break;
+        }
         }
 
         if (unlikely(PyErr_Occurred() || new_data->mod == NULL) || !_PyAST_Validate(new_data->mod))

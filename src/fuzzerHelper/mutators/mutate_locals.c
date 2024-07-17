@@ -24,8 +24,13 @@ int operate_locals_global(ast_data_t *data){
     }
     data->mod->v.Module.body = asdl_stmt_seq_copy_add(data->mod->v.Module.body, data->arena, 1);
     asdl_stmt_seq *body = data->mod->v.Module.body;
-    body->typed_elements[body->size - 1] = _PyAST_Assign(_Py_asdl_expr_seq_new(1, data->arena), re, NULL, LINE, data->arena);
-    body->typed_elements[body->size - 1]->v.Assign.targets->typed_elements[0] = NAME_S(gen_name_id((data->gen_name_cnt)++));
-    data->locals_cnt++;
+    if(picked_op <= USub + FloorDiv){
+        body->typed_elements[body->size - 1] = _PyAST_Assign(_Py_asdl_expr_seq_new(1, data->arena), re, NULL, LINE, data->arena);
+        body->typed_elements[body->size - 1]->v.Assign.targets->typed_elements[0] = NAME_S(gen_name_id((data->gen_name_cnt)++));
+        data->locals_cnt++;
+    }else{
+        // boolean is no need to assign
+        body->typed_elements[body->size - 1] = _PyAST_Expr(re, LINE, data->arena);
+    }
     return STATE_OK;
 }
