@@ -15,14 +15,27 @@ popd() {
 
 BUILD_PATH=$(readlink -f ./build)
 DEBUG_MODE=0
-LIBFUZZER_ARGS="-runs=5000"
+COV_MODE=0
+LIBFUZZER_ARGS="-runs=2000"
+BIN=pyFuzzerHelper
 
 while [ "$1" != "" ]; do
     case $1 in
-        -c | --clean )  echo "cleaning up logs"
-                        rm -rf $(readlink -f .)/log*
-                        ;;
-        -d | --debug ) DEBUG_MODE=1
+    -c | --clean)
+        echo "cleaning up logs"
+        rm -rf $(readlink -f .)/log*
+        ;;
+    -d | --debug)
+        DEBUG_MODE=1
+        ;;
+    --cov)
+        echo "cov mode"
+        COV_MODE=1
+        BIN=pyFuzzerHelper_cov
+        ;;
+    -r | --runs)
+        shift
+        LIBFUZZER_ARGS="-runs=$1"
         ;;
     esac
     shift
@@ -34,8 +47,16 @@ mkdir -p $LOG_PATH
 
 pushd $LOG_PATH
 if [ $DEBUG_MODE -eq 1 ]; then
-    ASAN_OPTIONS='detect_leaks=0' $BUILD_PATH/pyFuzzerHelper $LIBFUZZER_ARGS
+    ASAN_OPTIONS='detect_leaks=0' $BUILD_PATH/$BIN $LIBFUZZER_ARGS
 else
-    ASAN_OPTIONS='detect_leaks=0' $BUILD_PATH/pyFuzzerHelper $LIBFUZZER_ARGS &> $LOG_PATH/log.txt
+    ASAN_OPTIONS='detect_leaks=0' $BUILD_PATH/$BIN $LIBFUZZER_ARGS &>$LOG_PATH/log.txt
+fi
+if [ $COV_MODE -eq 1 ]; then
+    echo "analysis cov"
+    cd $LOG_PATH
+    llvm-profdata merge -sparse default.profraw -o default.profdata
+    # ignore src/ folder
+    llvm-cov show $BUILD_PATH/$BIN -instr-profile=default.profdata -o reports --ignore-filename-regex='src/*'
+    cat reports/index.txt
 fi
 popd
