@@ -86,6 +86,7 @@ int feed_func_locals(ast_data_t *data, stmt_ty func, stmt_ty base_clz)
                     assert(body->typed_elements[i + 1]->kind == Assign_kind);
                     assert(body->typed_elements[i + 1]->v.Assign.targets->size == 1);
                     assert(body->typed_elements[i + 1]->v.Assign.targets->typed_elements[0]->kind == Name_kind);
+                    assert(body->typed_elements[i + 1]->v.Assign.targets->typed_elements[0]->v.Name.id != NULL);
                     // trial fast path
                     instance_name = body->typed_elements[i + 1]->v.Assign.targets->typed_elements[0]->v.Name.id;
                     break;
@@ -134,7 +135,7 @@ int feed_func_locals(ast_data_t *data, stmt_ty func, stmt_ty base_clz)
 int func_variable_lifetime(ast_data_t *data, stmt_ty func)
 {
     int local_cnt = 0;
-    for (int i = 0; func->v.FunctionDef.body->size; i++)
+    for (int i = 0; i < func->v.FunctionDef.body->size; i++)
     {
         stmt_ty ele = func->v.FunctionDef.body->typed_elements[i];
         if (ele->kind == Assign_kind && ele->v.Assign.targets->size > 0 && ele->v.Assign.targets->typed_elements[0]->kind == Name_kind)
@@ -148,7 +149,7 @@ int func_variable_lifetime(ast_data_t *data, stmt_ty func)
     }
     int picked_local_id = rand() % local_cnt;
     PyObject *name = NULL;
-    for (int i = 0; func->v.FunctionDef.body->size; i++)
+    for (int i = 0; i < func->v.FunctionDef.body->size; i++)
     {
         stmt_ty ele = func->v.FunctionDef.body->typed_elements[i];
         if (ele->kind == Assign_kind && ele->v.Assign.targets->size > 0 && ele->v.Assign.targets->typed_elements[0]->kind == Name_kind)
