@@ -7,7 +7,6 @@ PyObject *PyUnicode_FromString_Arena(const char *s, PyArena *arena)
     _PyArena_AddPyObject(arena, re);
     // check obj2ast_constant from CPython source code
     Py_INCREF(re);
-    assert(PyUnicode_READY(re) == 0);
     return re;
 }
 
@@ -36,7 +35,6 @@ PyObject *PyUnicode_Copy_Arena(PyObject *s, PyArena *arena)
     _PyArena_AddPyObject(arena, re);
     // check obj2ast_constant from CPython source code
     Py_INCREF(re);
-    assert(PyUnicode_READY(re) == 0);
     return re;
 }
 
@@ -99,6 +97,9 @@ PyObject *get_locals_internal(int *index, asdl_stmt_seq *body_raw)
         switch (ele->kind)
         {
         case Assign_kind:
+            if(ele->v.Assign.targets->size == 0 || ele->v.Assign.targets->typed_elements[0]->kind != Name_kind){
+                break;
+            }
             if (*index == 0)
             {
                 return ele->v.Assign.targets->typed_elements[0]->v.Name.id;

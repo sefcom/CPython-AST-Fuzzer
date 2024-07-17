@@ -50,6 +50,9 @@ void dump_ast(const ast_data_t *data, char *buf, size_t max_len)
 			PANIC("Failed to dump ast\n");
 		}
 	}
+	if(ast_str == NULL){
+		PANIC("Failed to dump ast\n");
+	}
 	const char *str = PyUnicode_AsUTF8AndSize(ast_str, &len);
 	if (len >= max_len)
 	{

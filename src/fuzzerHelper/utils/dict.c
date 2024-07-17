@@ -66,16 +66,12 @@ stmt_ty dict_non_empty_and_type_cond(ast_data_t *data, PyObject *in_var, stmt_ty
         Load,
         LINE,
         data->arena);
-    expr_ty non_empty = _PyAST_UnaryOp(
-        UAdd,
-        _PyAST_Call(
+    expr_ty non_empty = _PyAST_Call(
             len,
             NULL,
             NULL,
             LINE,
-            data->arena),
-        LINE,
-        data->arena);
+            data->arena);
     expr_ty isinstance = _PyAST_Call(
         NAME_L(ISINSTANTANCE_OBJ),
         _Py_asdl_expr_seq_new(2, data->arena),
