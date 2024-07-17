@@ -89,7 +89,11 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
             overridable_func picked_func = rand_override_func(clz_base_id);
             state = add_rand_override(new_data, picked_clz, picked_func);
             if(state == 0 && new_data->locals_cnt > picked_func.args_size - (picked_func.arg_type & HAS_SELF)){
+                // try to call the override func
                 state = feed_func_locals(new_data, get_func(new_data, new_data->func_cnt - 1), picked_clz);
+                if(state == STATE_REROLL){
+                    state = STATE_OK;
+                }
             }
             break;
         }
