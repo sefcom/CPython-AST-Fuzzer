@@ -4,12 +4,13 @@ static PyObject *ast_module = NULL;
 static PyObject *ast_dump_func = NULL;
 static PyObject *ast_dump_func_fallback = NULL;
 
-void dump_ast(const ast_data_t *data, char *buf, size_t max_len)
+int dump_ast(const ast_data_t *data, char *buf, size_t max_len)
 {
 	PyObject *code = PyAST_mod2obj(data->mod);
 	if (code == NULL)
 	{
-		return;
+		PANIC("Failed to convert mod to code\n");
+		return -1;
 	}
 	if (ast_module == NULL)
 	{
@@ -57,6 +58,9 @@ void dump_ast(const ast_data_t *data, char *buf, size_t max_len)
 	if (len >= max_len)
 	{
 		ERROR("Buffer is not enough for backup ast data for crash report\n");
+		Py_DECREF(code);
+		Py_DECREF(ast_str);
+		return -1;
 	}
 	else
 	{
@@ -66,4 +70,5 @@ void dump_ast(const ast_data_t *data, char *buf, size_t max_len)
 	// Py_DECREF(addr);
 	Py_DECREF(code);
 	Py_DECREF(ast_str);
+	return 0;
 }
