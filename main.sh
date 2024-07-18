@@ -41,11 +41,17 @@ while [ "$1" != "" ]; do
     shift
 done
 
+# gave 8Gb memory, 20s timeout
+LIBFUZZER_ARGS="$LIBFUZZER_ARGS -rss_limit_mb=8192 -timeout=20"
+
 LOG_PATH=$(readlink -f .)/log$(date +"%m%d%H%M%S")
 
 mkdir -p $LOG_PATH
 
 pushd $LOG_PATH
+# sadly corpus doesn't work bc we are passing pointer as data
+# and obviously an AST cannot pass between different cpython instance
+# unless using compile_string and ast.unparse
 if [ $DEBUG_MODE -eq 1 ]; then
     ASAN_OPTIONS='detect_leaks=0' $BUILD_PATH/$BIN $LIBFUZZER_ARGS
 else

@@ -5,18 +5,14 @@
 ast_data_t *copy_asd_data_t(ast_data_t *src)
 {
     PyArena *arena = _PyArena_New();
-    ast_data_t *dst = (ast_data_t *)_PyArena_Malloc(arena, sizeof(ast_data_t));
-    dst->arena = arena;
-    if (dst->arena == NULL)
+    if (arena == NULL)
     {
         PANIC("arena is NULL\n");
     }
+    ast_data_t *dst = (ast_data_t *)_PyArena_Malloc(arena, sizeof(ast_data_t));
+    memcpy(dst, src, sizeof(ast_data_t));
+    dst->arena = arena;
     dst->mod = mod_copy(src->mod, dst->arena);
-    dst->gen_name_cnt = src->gen_name_cnt;
-    dst->func_cnt = src->func_cnt;
-    dst->plain_clz_cnt = src->plain_clz_cnt;
-    dst->inherited_clz_cnt = src->inherited_clz_cnt;
-    dst->locals_cnt = src->locals_cnt;
     return dst;
 }
 
