@@ -42,6 +42,10 @@ while [ "$1" != "" ]; do
         shift
         LIBFUZZER_ARGS="-runs=$1"
         ;;
+    * )
+        echo "Invalid argument $1"
+        exit
+        ;;
     esac
     shift
 done
