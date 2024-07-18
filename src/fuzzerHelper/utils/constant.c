@@ -10,6 +10,8 @@ GEN_CONST(SELF);
 GEN_CONST(KWARGS);
 GEN_CONST(VARARGS);
 GEN_CONST(CLEAR);
+GEN_CONST(APPEND);
+GEN_CONST(POP);
 
 void init_constants()
 {
@@ -20,4 +22,6 @@ void init_constants()
     GEN_CONST2(KWARGS, "kwargs");
     GEN_CONST2(VARARGS, "varargs");
     GEN_CONST2(CLEAR, "clear");
+    GEN_CONST2(APPEND, "append");
+    GEN_CONST2(POP, "pop");
 }

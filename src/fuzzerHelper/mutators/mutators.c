@@ -161,6 +161,12 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
                 state = mutate_dict_entry(new_data, picked_func);
                 break;
             }
+            case CLZ_LIST:
+            {
+                INFO("CLZ_LIST w/ picked_func: %d/%d\n", picked_func_id, new_data->func_cnt);
+                state = mutate_list_entry(new_data, picked_func);
+                break;
+            }
             default:
             {
                 state = STATE_REROLL;

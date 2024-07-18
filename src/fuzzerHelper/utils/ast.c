@@ -131,3 +131,15 @@ PyObject *get_locals(ast_data_t *data, int index)
     }
     return re;
 }
+
+stmt_ty do_w_cond(ast_data_t *data, expr_ty cond, stmt_ty body)
+{
+    stmt_ty stmt = _PyAST_If(
+        cond,
+        _Py_asdl_stmt_seq_new(1, data->arena),
+        NULL,
+        LINE,
+        data->arena);
+    stmt->v.If.body->typed_elements[0] = body;
+    return stmt;
+}

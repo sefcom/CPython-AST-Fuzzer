@@ -67,14 +67,21 @@ GEN_CONST(SELF);
 GEN_CONST(KWARGS);
 GEN_CONST(VARARGS);
 GEN_CONST(CLEAR);
+GEN_CONST(APPEND);
+GEN_CONST(POP);
 #undef GEN_CONST
 void init_constants();
 
 // --- variable helpers ---
 
+stmt_ty do_w_cond(ast_data_t *data, expr_ty cond, stmt_ty body);
+
+// -- iterable --
+stmt_ty iterable_non_empty_and_type_cond(ast_data_t *data, PyObject *in_var, PyObject *type, stmt_ty body);
+expr_ty iterable_get_element(ast_data_t *data, expr_ty in_var, PyObject *index);
+
 // -- dict --
 // instanceof(in_var, dict) and +len(in_var.keys())
-stmt_ty dict_non_empty_and_type_cond(ast_data_t *data, PyObject *in_var, stmt_ty body);
 stmt_ty dict_del(ast_data_t *data, PyObject *in_var, PyObject *index);
 stmt_ty dict_assign(ast_data_t *data, PyObject *in_var, expr_ty value, PyObject *index);
 
