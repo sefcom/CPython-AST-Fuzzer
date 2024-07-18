@@ -19,6 +19,7 @@ popd() {
 }
 
 BUILD_PATH=$(readlink -f ./build)
+CPYTHON_LIB=$(readlink -f ./cpython_bin/lib/libpython3.*.so.*.*)
 DEBUG_MODE=0
 COV_MODE=0
 LIBFUZZER_ARGS="-runs=2000"
@@ -36,7 +37,6 @@ while [ "$1" != "" ]; do
     --cov)
         echo "cov mode"
         COV_MODE=1
-        BIN=pyFuzzerHelper_cov
         ;;
     -r | --runs)
         shift
@@ -70,8 +70,7 @@ if [ $COV_MODE -eq 1 ]; then
     echo "analysis cov"
     cd $LOG_PATH
     llvm-profdata merge -sparse default.profraw -o default.profdata
-    # ignore src/ folder
-    llvm-cov show $BUILD_PATH/$BIN -instr-profile=default.profdata -o reports --ignore-filename-regex='src/*'
+    llvm-cov show $CPYTHON_LIB -instr-profile=default.profdata -o reports
     cat reports/index.txt
 fi
 popd

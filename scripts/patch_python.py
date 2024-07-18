@@ -62,30 +62,31 @@ with_libfuzzer = """OUT_NAME:
 
 """
 
-patches = []
+# no need to instrument specific targets
+# patches = []
 
-for d in instrument_dirs:
-    d = PYTHON_PATH / d
-    assert (d.exists())
-    # don't do it recursively
-    for file in d.glob("*.c"):
-        file_path = file.relative_to(PYTHON_PATH).as_posix().removesuffix(".c")
-        patches.append(with_libfuzzer.replace(
-            "IN_NAME", file_path + ".c").replace("OUT_NAME", file_path + ".o"))
-        print("instrument", file_path + ".c")
+# for d in instrument_dirs:
+#     d = PYTHON_PATH / d
+#     assert (d.exists())
+#     # don't do it recursively
+#     for file in d.glob("*.c"):
+#         file_path = file.relative_to(PYTHON_PATH).as_posix().removesuffix(".c")
+#         patches.append(with_libfuzzer.replace(
+#             "IN_NAME", file_path + ".c").replace("OUT_NAME", file_path + ".o"))
+#         print("instrument", file_path + ".c")
 
-patches += [""]
+# patches += [""]
 
 # TODO maybe try -fsanitize-recover=all
 content = [
-    "CFLAGS:=-fsanitize=address,signed-integer-overflow,unreachable $(CFLAGS)\n",
+    "CFLAGS:=-fsanitize=address,signed-integer-overflow,unreachable,fuzzer-no-link -fprofile-instr-generate -fcoverage-mapping $(CFLAGS)\n",
     "LDFLAGS:=-lstdc++ -fsanitize=address,signed-integer-overflow,unreachable,fuzzer-no-link $(LDFLAGS)\n"
 ]
 with open(PYTHON_PATH / "Makefile.pre.in", "r", encoding="utf8") as f:
     f_content = f.readlines()
     l = f_content.index(".c.o:\n")
     content += f_content[:l]
-    content += patches
+    # content += patches
     content += f_content[l:]
 
 with open(PYTHON_PATH / "Makefile.pre.in", "w", encoding="utf8") as f:
