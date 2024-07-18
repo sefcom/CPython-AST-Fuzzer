@@ -9,12 +9,12 @@ int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func)
     stmt_ty add_stmt = NULL;
     while (state)
     {
-        int picked_mod = rand() % 3;
+        int picked_mod = rand() % 4;
         switch (picked_mod)
         {
-        case 0: // assign random arg w/ random locals
+        case 0: // override random arg w/ random locals
         {
-            INFO("assign random item w/ random locals\n");
+            INFO("override random item w/ random locals\n");
             if (data->locals_cnt == 0)
             {
                 state = STATE_REROLL; // no locals defined yet, just re-roll
@@ -29,9 +29,9 @@ int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func)
             state = STATE_OK;
             break;
         }
-        case 1: // assign w/ self
+        case 1: // override w/ self
         {
-            INFO("assign w/ self\n");
+            INFO("override w/ self\n");
             asdl_arg_seq *args = picked_func->v.FunctionDef.args->args;
             if (args->size <= 1 || PyUnicode_CompareWithASCIIString(args->typed_elements[0]->arg, "self") != 0)
             {
@@ -54,9 +54,33 @@ int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func)
             state = STATE_OK;
             break;
         }
+        case 3: // clear
+        {
+            INFO("clear\n");
+            asdl_arg_seq *args = picked_func->v.FunctionDef.args->args;
+            int picked_arg_id = rand() % args->size;
+            PyObject *picked_arg = args->typed_elements[picked_arg_id]->arg;
+            add_stmt = dict_non_empty_and_type_cond(
+                data,
+                picked_arg,
+                stmt(_PyAST_Call(
+                         _PyAST_Attribute(
+                             NAME_L(picked_arg),
+                             CLEAR_OBJ,
+                             Load,
+                             LINE,
+                             data->arena),
+                         NULL,
+                         NULL,
+                         LINE,
+                         data->arena),
+                     data->arena));
+            state = STATE_OK;
+            break;
+        }
         }
     }
-    picked_func->v.FunctionDef.body = asdl_stmt_seq_copy_add(picked_func->v.FunctionDef.body, data->arena, 1);
-    picked_func->v.FunctionDef.body->typed_elements[picked_func->v.FunctionDef.body->size - 1] = add_stmt;
-    return STATE_OK;
-}
+        picked_func->v.FunctionDef.body = asdl_stmt_seq_copy_add(picked_func->v.FunctionDef.body, data->arena, 1);
+        picked_func->v.FunctionDef.body->typed_elements[picked_func->v.FunctionDef.body->size - 1] = add_stmt;
+        return STATE_OK;
+    }

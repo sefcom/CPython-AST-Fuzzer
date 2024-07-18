@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+if [[ "$EUID" = 0 ]]; then
+    echo "don't run as root"
+    exit
+fi
+
 ###
 # run pyFuzzer by running the src/main.py
 ###
@@ -41,7 +46,7 @@ while [ "$1" != "" ]; do
     shift
 done
 
-# gave 8Gb memory, 20s timeout
+# gave 8Gb memory, 20s timeout, 100000 runs will take ~4Gb
 LIBFUZZER_ARGS="$LIBFUZZER_ARGS -rss_limit_mb=8192 -timeout=20"
 
 LOG_PATH=$(readlink -f .)/log$(date +"%m%d%H%M%S")

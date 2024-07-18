@@ -61,7 +61,7 @@ int __attribute__((visibility("default"))) LLVMFuzzerTestOneInput(const ast_data
     if(code == NULL || PyErr_Occurred()){
         if(PyErr_Occurred()) PyErr_Print();
         _PyArena_Free(arena);
-        ERROR("Failed to compile AST\n");
+        ERROR("Failed to compile AST, skip input\n");
         // bad data so we will not want to add it to corpus
         return -1;
     }

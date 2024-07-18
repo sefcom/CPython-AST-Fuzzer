@@ -9,6 +9,7 @@ GEN_CONST(ISINSTANTANCE);
 GEN_CONST(SELF);
 GEN_CONST(KWARGS);
 GEN_CONST(VARARGS);
+GEN_CONST(CLEAR);
 
 void init_constants()
 {
@@ -18,4 +19,5 @@ void init_constants()
     GEN_CONST2(SELF, "self");
     GEN_CONST2(KWARGS, "kwargs");
     GEN_CONST2(VARARGS, "varargs");
+    GEN_CONST2(CLEAR, "clear");
 }
