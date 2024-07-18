@@ -132,7 +132,7 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
                 state = STATE_REROLL; // no locals defined yet, just re-roll
                 break;
             }
-            state = operate_locals_global(new_data);
+            state = blend_locals_global(new_data);
             break;
         }
         // modify function body

@@ -25,6 +25,6 @@ int func_variable_lifetime(ast_data_t *data, stmt_ty func);
 
 // -- variables --
 int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func);
-int operate_locals_global(ast_data_t *data);
+int blend_locals_global(ast_data_t *data);
 
 #endif // MUTATORS_H

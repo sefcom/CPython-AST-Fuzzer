@@ -1,5 +1,6 @@
 # pyFuzzer
-A toy project for Python interpreter fuzzing using AST mutators based on LibFuzzer.
+A toy project for Python interpreter fuzzing using AST-base mutators, based on LibFuzzer.  
+*Started in SEFCOM.*
 
 ## Requirements
 - nix-shell
@@ -40,7 +41,8 @@ arguments:
 
 ## Designing
 [pipline.md](./pipline.md)  
-For mutators list, check [mutators.h](./src/fuzzerHelper/mutators/mutators.h).
+For mutators list, check [mutators.h](./src/fuzzerHelper/mutators/mutators.h).  
+My goal is to recover and find more similar bugs like the motivation samples in [pipline.md](./pipline.md).
 
 ## TODO
 - [ ] Using Atheris to extend target modules from only builtin to others (Atheris only support Python <= 3.11 so far)
@@ -48,4 +50,6 @@ For mutators list, check [mutators.h](./src/fuzzerHelper/mutators/mutators.h).
 - [ ] Add more guide to mutator picking instead of pure randomness
 - [ ] More mutator, more performance
 - [ ] Automatically document parse
-- [ ] is there any way can enable Corpus?
+- [ ] is there any way to enable Corpus?
+- [ ] More depth(it's only 2 rn)
+- [ ] Multi-inherit class support(risk at conflicted class)

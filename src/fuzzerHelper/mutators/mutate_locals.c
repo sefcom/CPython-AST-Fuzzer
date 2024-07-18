@@ -1,7 +1,7 @@
 #include "mutators.h"
 #include "deepcopy.h"
 
-int operate_locals_global(ast_data_t *data){
+int blend_locals_global(ast_data_t *data){
     int picked_local_id = rand() % data->locals_cnt;
     int picked_local_id2 = rand() % (data->locals_cnt - 1);
     if(picked_local_id2 >= picked_local_id){
