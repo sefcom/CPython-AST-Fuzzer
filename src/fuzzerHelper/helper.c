@@ -1,6 +1,8 @@
 #include "helper.h"
 #include "mutators/mutators.h"
 
+FILE *last_case = NULL;
+
 void init_ast_data(ast_data_t **buf, PyArena *arena)
 {
 	ast_data_t *data = (ast_data_t *)_PyArena_Malloc(arena, sizeof(ast_data_t));
@@ -12,7 +14,7 @@ void init_ast_data(ast_data_t **buf, PyArena *arena)
 void get_dummy_ast(ast_data_t **data_ptr)
 {
 	PyArena *arena = _PyArena_New();
-	if(arena == NULL)
+	if (arena == NULL)
 	{
 		error("arena is NULL\n");
 	}
@@ -23,7 +25,7 @@ void get_dummy_ast(ast_data_t **data_ptr)
 void get_UAF2_ast(ast_data_t **data_ptr)
 {
 	PyArena *arena = _PyArena_New();
-	if(arena == NULL)
+	if (arena == NULL)
 	{
 		error("arena is NULL\n");
 	}
@@ -56,12 +58,30 @@ size_t __attribute__((visibility("default"))) LLVMFuzzerCustomMutator(ast_data_t
 	}
 }
 
-int __attribute__((visibility("default"))) LLVMFuzzerInitialize(int *argc, char ***argv) {
+int __attribute__((visibility("default"))) LLVMFuzzerInitialize(int *argc, char ***argv)
+{
 	data_backup = (global_info_t *)malloc(sizeof(global_info_t));
 	data_backup->ast_dump = (char *)calloc(AST_DUMP_BUF_SIZE, 1);
-    Py_Initialize();
+	Py_Initialize();
 	gen_name_init();
 	override_name_init();
 	init_constants();
-    return 0;
+	last_case = NULL;
+	if (argc != NULL && argv != NULL)
+	{
+		for (int i = 0; i < *argc; i++)
+		{
+			if (strncmp((*argv)[i], "-last-case=", strlen("-last-case=")) == 0)
+			{
+				INFO("Using last-case file: %s\n", (*argv)[i] + strlen("-last-case="));
+				last_case = fopen((*argv)[i] + strlen("-last-case="), "r");
+				if (last_case == NULL)
+				{
+					ERROR("failed to open last_case file\n");
+				}
+				break;
+			}
+		}
+	}
+	return 0;
 }

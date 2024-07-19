@@ -6,7 +6,8 @@ import re
 symbols = [
     r"^_PyAST_(.*?)",
     r"^_Py_asdl_(.*?)",
-    "PyAST_mod2obj"
+    "PyAST_mod2obj",
+    "PyAST_obj2mod"
 ]
 include_h = "#include <pyport.h>"
 
@@ -80,7 +81,7 @@ with_libfuzzer = """OUT_NAME:
 # TODO maybe try -fsanitize-recover=all
 content = [
     "CFLAGS:=-fsanitize=address,signed-integer-overflow,unreachable,fuzzer-no-link -fprofile-instr-generate -fcoverage-mapping $(CFLAGS)\n",
-    "LDFLAGS:=-lstdc++ -fsanitize=address,signed-integer-overflow,unreachable,fuzzer-no-link $(LDFLAGS)\n"
+    "LDFLAGS:=-lstdc++ -fsanitize=address,signed-integer-overflow,unreachable,fuzzer-no-link -fprofile-instr-generate -fcoverage-mapping $(LDFLAGS)\n"
 ]
 with open(PYTHON_PATH / "Makefile.pre.in", "r", encoding="utf8") as f:
     f_content = f.readlines()

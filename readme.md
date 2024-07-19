@@ -28,6 +28,7 @@ arguments:
 - `-d` / `--debug` using stdout instead of redirecting into log file
 - `--cov` generate coverage report using `llvm-cov`
 - `-r <turns>` / `--runs <turns>` equivalent to libFuzzer `-runs=<turns>`
+- `-l` / `--last-case` load most recent corpus saved under log folder as dummy AST instead of plain AST.
 
 ## Executing every known crash
 ```bash
