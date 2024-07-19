@@ -59,26 +59,33 @@ done
 # gave 8Gb memory, 20s timeout, 100000 runs will take ~4Gb
 LIBFUZZER_ARGS="$LIBFUZZER_ARGS -rss_limit_mb=8192 -timeout=20"
 
+OLD_LOGS=$(find $WORK_DIR -type d -name "log*")
+
+LOG_PATH=$WORK_DIR/log$(date +"%m%d%H%M%S")
+mkdir -p $LOG_PATH
+
 if [ $USE_LAST -eq 1 ]; then
-    LAST_CASE_FOLDER=$(find $WORK_DIR -type d -name "log*" | sort | tail -n 1)
+    LAST_CASE_FOLDER=$(echo $OLD_LOGS | sort | tail -n 1)
     LAST_CASE_FILE=$(find $LAST_CASE_FOLDER -type f -name "corpus-*.py" | sort | tail -n 1)
     echo "last case found: $LAST_CASE_FILE"
     if [ -z $LAST_CASE_FILE ]; then
         echo "No last case found"
     else
-        LAST_CASE=$(readlink -f $LAST_CASE_FILE)
-        cp $LAST_CASE $WORK_DIR/last_case_corpus.py
-        LIBFUZZER_ARGS="$LIBFUZZER_ARGS -last-case=$WORK_DIR/last_case_corpus.py"
+        cp $LAST_CASE_FILE $LOG_PATH/base_ast.py
+        # copy old profraw
+        find $LAST_CASE_FOLDER -type f -name "log*.profraw" -exec cp {} $LOG_PATH \;
+        if [ -f $LAST_CASE_FOLDER/default.profraw ]; then
+            # tmp for remove / as suffix and ${tmp##*/} get last group of / as delimiter
+            tmp=${LAST_CASE_FOLDER#/}
+            cp $LAST_CASE_FOLDER/default.profraw $LOG_PATH/${tmp##*/}.profraw
+        fi
+        LIBFUZZER_ARGS="$LIBFUZZER_ARGS -last-case=$LOG_PATH/bast_ast.py"
     fi
 fi
 
 if [ $CLEAN_UP_LOGS -eq 1 ]; then
-    rm -rf $(readlink -f .)/log*
+    rm -rf $OLD_LOGS
 fi
-
-LOG_PATH=$(readlink -f .)/log$(date +"%m%d%H%M%S")
-
-mkdir -p $LOG_PATH
 
 pushd $LOG_PATH
 # sadly corpus doesn't work bc we are passing pointer as data
@@ -92,7 +99,7 @@ fi
 if [ $COV_MODE -eq 1 ]; then
     echo "analysis cov"
     cd $LOG_PATH
-    llvm-profdata merge -sparse default.profraw -o default.profdata
+    llvm-profdata merge -sparse $(find $LOG_PATH -type f -name "*.profraw") -o default.profdata
     llvm-cov show $CPYTHON_LIB -instr-profile=default.profdata -o reports
     cat reports/index.txt
 fi

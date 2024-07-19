@@ -9,6 +9,8 @@
 #include "pycore_ast.h"
 
 #define AST_DUMP_BUF_SIZE 2048
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 
 typedef struct{
     mod_ty mod;
