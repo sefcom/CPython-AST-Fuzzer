@@ -2,8 +2,6 @@
 #include "deepcopy.h"
 #include "override_func.h"
 
-#define LONG(name) PyLong_FromLong_Arena(name, data->arena)
-
 int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func)
 {
     int state = STATE_REROLL;

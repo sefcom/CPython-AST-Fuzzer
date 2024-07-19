@@ -101,8 +101,10 @@ stmt_ty do_w_cond(ast_data_t *data, expr_ty cond, stmt_ty body);
 // -- iterable --
 // isinstance(<in_var>, <type>) and len(<in_var>) > 0
 stmt_ty iterable_non_empty_and_type_cond(ast_data_t *data, PyObject *in_var, PyObject *type, stmt_ty body);
-// <in_var>[index % len(in_var)]
-expr_ty iterable_get_element(ast_data_t *data, expr_ty in_var, PyObject *index);
+// <in_var>[index % len(in_var)] for load context
+expr_ty iterable_get_element_load(ast_data_t *data, expr_ty in_var, PyObject *index);
+// <in_var>[index % len(in_var)] for del context
+expr_ty iterable_get_element_del(ast_data_t *data, expr_ty in_var, PyObject *index);
 
 // -- dict --
 // del <in_var>[<index>]

@@ -14,11 +14,11 @@ stmt_ty iterable_non_empty_and_type_cond(ast_data_t *data, PyObject *in_var, PyO
         LINE,
         data->arena);
     expr_ty non_empty = _PyAST_Call(
-            len,
-            NULL,
-            NULL,
-            LINE,
-            data->arena);
+        len,
+        NULL,
+        NULL,
+        LINE,
+        data->arena);
     expr_ty isinstance = _PyAST_Call(
         NAME_L(ISINSTANTANCE_OBJ),
         _Py_asdl_expr_seq_new(2, data->arena),
@@ -37,7 +37,7 @@ stmt_ty iterable_non_empty_and_type_cond(ast_data_t *data, PyObject *in_var, PyO
     return do_w_cond(data, cond, body);
 }
 
-expr_ty iterable_get_element(ast_data_t *data, expr_ty in_var, PyObject *index)
+expr_ty _iterable_get_element(ast_data_t *data, expr_ty in_var, PyObject *index, expr_context_ty ctx)
 {
     // in_var.keys()[index % in_var.keys().__len__()]
     // in_var[index % in_var.__len__()]
@@ -60,7 +60,17 @@ expr_ty iterable_get_element(ast_data_t *data, expr_ty in_var, PyObject *index)
             len_of_key,
             LINE,
             data->arena),
-        Load,
+        ctx,
         LINE,
         data->arena);
+}
+
+expr_ty iterable_get_element_load(ast_data_t *data, expr_ty in_var, PyObject *index)
+{
+    return _iterable_get_element(data, in_var, index, Load);
+}
+
+expr_ty iterable_get_element_del(ast_data_t *data, expr_ty in_var, PyObject *index)
+{
+    return _iterable_get_element(data, in_var, index, Del);
 }

@@ -8,6 +8,7 @@
 #define NAME_L(name) _PyAST_Name(name, Load, LINE, data->arena)
 #define NAME_S(name) _PyAST_Name(name, Store, LINE, data->arena)
 #define CONST(name) _PyAST_Constant(name, NULL, LINE, data->arena)
+#define LONG(name) PyLong_FromLong_Arena(name, data->arena)
 
 #define RECURSIVE_CASE(type, func_name, func_adding, return_adding) \
     case type##_kind:                                               \

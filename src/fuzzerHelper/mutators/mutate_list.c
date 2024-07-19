@@ -12,7 +12,7 @@ int mutate_list_entry(ast_data_t *data, stmt_ty picked_func)
         int picked_arg_id = rand() % args->size;
         PyObject *picked_arg = args->typed_elements[picked_arg_id]->arg;
         PyObject *val;
-        int picked_mod = rand() % 2;
+        int picked_mod = rand() % 4;
         switch (picked_mod)
         {
         // append
@@ -86,6 +86,46 @@ int mutate_list_entry(ast_data_t *data, stmt_ty picked_func)
                          LINE,
                          data->arena),
                      data->arena));
+            state = STATE_OK;
+            break;
+        }
+        // clear
+        case 2:
+        {
+            INFO("clear\n");
+            add_stmt = iterable_non_empty_and_type_cond(
+                data,
+                picked_arg,
+                builtin_clz_obj[CLZ_LIST],
+                stmt(_PyAST_Call(
+                         _PyAST_Attribute(
+                             NAME_L(picked_arg),
+                             CLEAR_OBJ,
+                             Load,
+                             LINE,
+                             data->arena),
+                         NULL,
+                         NULL,
+                         LINE,
+                         data->arena),
+                     data->arena));
+            state = STATE_OK;
+            break;
+        }
+        // del random item
+        case 3:
+        {
+            INFO("del random item\n");
+            asdl_expr_seq *targets = _Py_asdl_expr_seq_new(1, data->arena);
+            targets->typed_elements[0] = iterable_get_element_del(data, NAME_L(picked_arg), LONG(rand()));
+            add_stmt = iterable_non_empty_and_type_cond(
+                data,
+                picked_arg,
+                builtin_clz_obj[CLZ_LIST],
+                _PyAST_Delete(
+                    targets,
+                    LINE,
+                    data->arena));
             state = STATE_OK;
             break;
         }

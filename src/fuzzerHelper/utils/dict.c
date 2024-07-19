@@ -23,7 +23,7 @@ stmt_ty dict_assign(ast_data_t *data, PyObject *in_var, expr_ty value, PyObject 
         data->arena);
     stmt->v.Assign.targets->typed_elements[0] = _PyAST_Subscript(
         NAME_L(in_var),
-        iterable_get_element(data, keys, index),
+        iterable_get_element_load(data, keys, index),
         Store,
         LINE,
         data->arena);
@@ -50,7 +50,7 @@ stmt_ty dict_del(ast_data_t *data, PyObject *in_var, PyObject *index)
         data->arena);
     stmt->v.Delete.targets->typed_elements[0] = _PyAST_Subscript(
         NAME_L(in_var),
-        iterable_get_element(data, keys, index),
+        iterable_get_element_load(data, keys, index),
         Del,
         LINE,
         data->arena);
