@@ -1,6 +1,6 @@
 atheris
-cpython
-cpython*
+cpython/
+cpython_*/
 log*/
 build
 .gdb_history
