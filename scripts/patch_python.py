@@ -39,6 +39,7 @@ for header in PYTHON_INCLUDE.rglob("*.h"):
             for symbol in symbols:
                 if re.match(symbol, result.group(3)):
                     print("exported ", result.group(3))
+                    # export our symbols by add PyAPI_FUNC(<RETURN_TYPE>) in front of the function definition
                     line = line.replace(result.group(1) + result.group(2), "PyAPI_FUNC(" + result.group(1) + (result.group(2) if "*" in result.group(2) else "") + ") ")
                     if extern:
                         line = "extern " + line
@@ -48,22 +49,23 @@ for header in PYTHON_INCLUDE.rglob("*.h"):
                     break
     if patched:
         if not include_stat:
+            # need to include pyport.h for PyAPI_FUNC marco
             content.insert(0, include_h + "\n")
         with open(header, "w", encoding="utf8") as f:
             f.writelines(content)
             print("patching ", header)
 
-# --- start patching makefile.pre.in ---
-instrument_dirs = [
-    "Objects"
-]
-
-with_libfuzzer = """OUT_NAME:
-	$(CC) -c $(PY_CORE_CFLAGS) -fsanitize=fuzzer-no-link -o $@ $(srcdir)/IN_NAME
-
-"""
-
 # no need to instrument specific targets
+# --- start patching makefile.pre.in ---
+# instrument_dirs = [
+#     "Objects"
+# ]
+
+# with_libfuzzer = """OUT_NAME:
+# 	$(CC) -c $(PY_CORE_CFLAGS) -fsanitize=fuzzer-no-link -o $@ $(srcdir)/IN_NAME
+
+# """
+
 # patches = []
 
 # for d in instrument_dirs:
@@ -78,7 +80,7 @@ with_libfuzzer = """OUT_NAME:
 
 # patches += [""]
 
-# TODO maybe try -fsanitize-recover=all
+# -fprofile-instr-generate -fcoverage-mapping for generate coverage report
 content = [
     "CFLAGS:=-fsanitize=address,signed-integer-overflow,unreachable,fuzzer-no-link -fprofile-instr-generate -fcoverage-mapping $(CFLAGS)\n",
     "LDFLAGS:=-lstdc++ -fsanitize=address,signed-integer-overflow,unreachable,fuzzer-no-link -fprofile-instr-generate -fcoverage-mapping $(LDFLAGS)\n"

@@ -30,6 +30,9 @@ let
     ];
   };
 in
+# TODO we can just override CPython pkgs of nix instead of
+# manually copy its code here to build it otherselves
+# but I faced some problem to do that(clangStdenv)
 pkgs.mkShell {
   stdenv= pkgs.ccacheStdenv;
   packages = [

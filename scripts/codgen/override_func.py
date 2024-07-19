@@ -79,12 +79,20 @@ HEADER_TEMPLATE = """
 #ifndef OVERRIDE_FUNC_GEN_H
 # define OVERRIDE_FUNC_GEN_H
 #include "ast.h"
+
+// overridable_func hash table by uthash
 extern overridable_func *overridable_funcs;
+// overridable_func list
 extern overridable_func *overridable_funcs_raw;
+// builtin class name list
 extern PyObject **builtin_clz_obj;
+// builtin class count
 extern const int builtin_type_cnt;
+// builtin class start index in the overridable function list
 extern int builtin_clz_start[];
+// builtin class name hash value list
 extern unsigned long builtin_clz_str[];
+// enum of builtin classes
 ENUM
 void override_name_init();
 #endif

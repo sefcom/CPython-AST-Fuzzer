@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <stdint.h>
+// uthash hash table implementation, copyright inside
 #include "hash.h"
 
 #define Py_BUILD_CORE 1
@@ -21,6 +22,7 @@ typedef struct{
     int plain_clz_cnt;
     int inherited_clz_cnt;
     int func_cnt;
+    // global locals
     int locals_cnt;
 } ast_data_t;
 
