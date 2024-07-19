@@ -62,6 +62,7 @@ else
     echo -e "[INFO] cloning cpython into $CPYTHON_PATH"
     git clone --quiet --depth=1 --branch=v$CPYTHON_VERSION https://github.com/python/cpython.git $CPYTHON_PATH
     BUILD_CPYTHON=1
+    FORCE_MODE=1 # generate codgen
     cd $WORK_DIR
 fi
 
@@ -108,6 +109,7 @@ if [ $FORCE_MODE -eq 1 ]; then
     fi
     
     # -- codegen --
+    mkdir -p $SRC_PATH/codgen
     python $SCRIPT_DIR/codgen/deepcopy_ast.py $(readlink -f $CPYTHON_BIN_PATH/include/python3.*/internal/pycore_ast.h) $SRC_PATH/codgen/deepcopy_gen
     python $SCRIPT_DIR/codgen/override_func.py $SRC_PATH/codgen/override_func_gen
 fi
