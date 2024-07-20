@@ -1,4 +1,6 @@
 #include "deepcopy.h"
+#include "arena.h"
+#include "log.h"
 
 #define TRIAL_COPY(type)                                 \
     type##_ty type##_copy(type##_ty val, PyArena *arena) \

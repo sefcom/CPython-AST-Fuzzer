@@ -1,7 +1,7 @@
 #ifndef DEEPCOPY_H
 #define DEEPCOPY_H
 
-#include "ast.h"
+#include "common.h"
 #include "deepcopy_gen.h"
 
 expr_ty expr_copy(expr_ty val, PyArena *arena);

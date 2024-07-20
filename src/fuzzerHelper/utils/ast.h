@@ -3,34 +3,10 @@
 
 #include "defs.h"
 #include "common.h"
+#include "arena.h"
 #include "log.h"
-
-typedef enum
-{
-    HAS_VARARGS = 0b1,
-    HAS_KWARGS = 0b10,
-    HAS_SELF = 0b100,
-} overridable_func_flags;
-
-typedef struct
-{
-    const char *key;
-    PyObject *name;
-    int args_size;
-    overridable_func_flags arg_type;
-    UT_hash_handle hh;
-} overridable_func;
-
-// --- Arena helpers ---
-
-// construct a new PyUnicode from C-style string by PyArena
-PyObject *PyUnicode_FromString_Arena(const char *s, PyArena *arena);
-// copy a PyUnicode object into PyArena
-PyObject *PyUnicode_Copy_Arena(PyObject *s, PyArena *arena);
-// construct a new PyLong from long by PyArena
-PyObject *PyLong_FromLong_Arena(long n, PyArena *arena);
-// copy a PyLong object into PyArena
-PyObject *PyLong_Copy_Arena(PyObject *s, PyArena *arena);
+#include "override_func.h"
+#include "deepcopy.h"
 
 // --- name helpers ---
 

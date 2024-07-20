@@ -1,6 +1,4 @@
 #include "mutators.h"
-#include "deepcopy.h"
-#include "override_func.h"
 
 int mutate_list_entry(ast_data_t *data, stmt_ty picked_func)
 {

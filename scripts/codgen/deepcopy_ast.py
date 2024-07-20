@@ -1,3 +1,10 @@
+###
+# This script is used to generate deepcopy functions for CPython internal AST nodes.
+# License: MIT
+# Author: Eritque arcus
+# Date: July 20, 2024
+###
+
 import sys
 
 if len(sys.argv) != 3:

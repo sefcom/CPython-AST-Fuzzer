@@ -1,6 +1,4 @@
 #include "mutators.h"
-#include "deepcopy.h"
-#include "override_func.h"
 
 ast_data_t *copy_asd_data_t(ast_data_t *src)
 {
@@ -135,10 +133,10 @@ int entry_mutate(ast_data_t **data, size_t max_size, size_t seed)
             state = blend_locals_global(new_data);
             break;
         }
-        // modify function body
+        // modify argument based on types
         case 5:
         {
-            INFO("mutator: modify_func_body\n");
+            INFO("mutator: modify_arguments\n");
             if (new_data->func_cnt == 0)
             {
                 state = STATE_REROLL; // no functions defined yet, just re-roll
