@@ -83,7 +83,7 @@ if [ $USE_LAST -eq 1 ]; then
             cp $LAST_CASE_FOLDER/default.profraw $LOG_PATH/${tmp##*/}.profraw
         fi
         # it will be handled by custom LLVMFuzzerInitialize
-        LIBFUZZER_ARGS="$LIBFUZZER_ARGS -last-case=$LOG_PATH/bast_ast.py"
+        LIBFUZZER_ARGS="$LIBFUZZER_ARGS -last-case=$LOG_PATH/base_ast.py"
     fi
 fi
 
