@@ -60,8 +60,8 @@ for k, v in targets_specs.items():
             body += f"overridable_funcs_raw[{i}] = GEN_ITEM(\"{f}\", 1, {
                 0b100});\n"
         else:
-            body += f"overridable_funcs_raw[{i}] = GEN_ITEM(\"{f}\", {len(spec[0])}, {int(
-                spec[1] is not None) + int(spec[2] is not None) << 1 + int("self" in spec[0]) << 2});\n"
+            body += f"overridable_funcs_raw[{i}] = GEN_ITEM(\"{f}\", {len(spec[0])}, {int(spec[1] is not None) + (int(spec[2] is not None) << 1) + (int("self" in spec[0]) << 2)});\n"
+            
         i += 1
     body += f"builtin_clz_obj[{j}] = PyUnicode_FromString(\"{k}\");\n"
     body += f"HASH_VALUE(\"{k}\", {len(k)}, builtin_clz_str[{j}]);\n"
