@@ -1,5 +1,6 @@
 #include "target.h"
 #include "pycore_compile.h"
+#include "hash.h"
 
 extern global_info_t *data_backup;
 static size_t run_count = 0;

@@ -1,15 +1,12 @@
 #include "mutators.h"
+#include "mutate_type.h"
 
-int mutate_list_entry(ast_data_t *data, stmt_ty picked_func)
+MUTATE_TYPE(list)
 {
-    int state = STATE_REROLL;
-    stmt_ty add_stmt = NULL;
-    while (state != STATE_OK)
+    MUTATE_TYPE_LOOP
     {
         asdl_arg_seq *args = picked_func->v.FunctionDef.args->args;
-        int picked_arg_id = rand() % args->size;
-        PyObject *picked_arg = args->typed_elements[picked_arg_id]->arg;
-        PyObject *val;
+        PICK_ARG
         int picked_mod = rand() % 4;
         switch (picked_mod)
         {
@@ -17,10 +14,11 @@ int mutate_list_entry(ast_data_t *data, stmt_ty picked_func)
         case 0:
         {
             INFO("append\n");
-            PyObject *val;
-            if (rand() % 2)
+            PyObject *val = NULL;
+            switch (rand() % 3)
             {
-                // random arg mode
+            // random arg mode
+            case 0:
                 if (picked_func->v.FunctionDef.args->args->size == 1)
                 {
                     state = STATE_REROLL;
@@ -32,9 +30,8 @@ int mutate_list_entry(ast_data_t *data, stmt_ty picked_func)
                     picked_arg_id2++;
                 }
                 val = picked_func->v.FunctionDef.args->args->typed_elements[picked_arg_id2]->arg;
-            }
-            else
-            {
+                break;
+            case 1:
                 if (data->locals_cnt == 0)
                 {
                     state = STATE_REROLL;
@@ -42,6 +39,23 @@ int mutate_list_entry(ast_data_t *data, stmt_ty picked_func)
                 }
                 int picked_local_id = rand() % data->locals_cnt;
                 val = get_locals(data, picked_local_id);
+                break;
+            case 2:
+                if (args->size <= 1 || PyUnicode_CompareWithASCIIString(args->typed_elements[0]->arg, "self") != 0)
+                {
+                    state = STATE_REROLL;
+                    break;
+                }
+                if (picked_arg_id == 0)
+                {
+                    PICK_ARG_OFS(-1, 1)
+                }
+                // append self
+                val = SELF_OBJ;
+                break;
+            }
+            if(val == NULL){
+                break;
             }
             asdl_expr_seq *body = _Py_asdl_expr_seq_new(1, data->arena);
             body->typed_elements[0] = NAME_L(val);
@@ -129,7 +143,6 @@ int mutate_list_entry(ast_data_t *data, stmt_ty picked_func)
         }
         }
     }
-    picked_func->v.FunctionDef.body = asdl_stmt_seq_copy_add(picked_func->v.FunctionDef.body, data->arena, 1);
-    picked_func->v.FunctionDef.body->typed_elements[picked_func->v.FunctionDef.body->size - 1] = add_stmt;
+    MERGE_STMT
     return STATE_OK;
 }

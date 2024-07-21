@@ -62,7 +62,6 @@ pkgs.mkShell {
     export CC="${pkgs.clang_18}/bin/clang";
     export CXX="${pkgs.clang_18}/bin/clang++";
     export CLANG_BIN="${pkgs.clang_18}/bin/clang";
-    export LIBCLANG_RT_PATH="${pkgs.llvmPackages_18.compiler-rt-libc}/lib/linux";
 
     # for building Python
     export OPENSSL_DEV=${pkgs.openssl.dev};

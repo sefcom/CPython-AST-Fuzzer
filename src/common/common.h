@@ -2,8 +2,6 @@
 #define COMMON_H
 
 #include <stdint.h>
-// uthash hash table implementation, copyright inside
-#include "hash.h"
 
 #define Py_BUILD_CORE 1
 #include "Python.h"

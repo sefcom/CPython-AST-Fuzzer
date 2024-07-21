@@ -1,20 +1,18 @@
 #include "mutators.h"
+#include "mutate_type.h"
 
-int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func)
+MUTATE_TYPE(dict)
 {
-    int state = STATE_REROLL;
-    stmt_ty add_stmt = NULL;
-    while (state != STATE_OK)
+    MUTATE_TYPE_LOOP
     {
+        asdl_arg_seq *args = picked_func->v.FunctionDef.args->args;
+        PICK_ARG
         int picked_mod = rand() % 4;
         switch (picked_mod)
         {
         case 0: // override random arg w/ random locals
         {
             INFO("override random item w/ random locals\n");
-            asdl_arg_seq *args = picked_func->v.FunctionDef.args->args;
-            int picked_arg_id = rand() % args->size;
-            PyObject *picked_arg = args->typed_elements[picked_arg_id]->arg;
             PyObject *val;
             if (rand() % 2)
             {
@@ -48,14 +46,15 @@ int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func)
         case 1: // override w/ self
         {
             INFO("override w/ self\n");
-            asdl_arg_seq *args = picked_func->v.FunctionDef.args->args;
             if (args->size <= 1 || PyUnicode_CompareWithASCIIString(args->typed_elements[0]->arg, "self") != 0)
             {
                 state = STATE_REROLL;
                 break;
             }
-            int picked_arg_id = rand() % (args->size - 1) + 1;
-            PyObject *picked_arg = args->typed_elements[picked_arg_id]->arg;
+            if (picked_arg_id == 0)
+            {
+                PICK_ARG_OFS(-1, 1)
+            }
             add_stmt = iterable_non_empty_and_type_cond(data, picked_arg, builtin_clz_obj[CLZ_DICT], dict_assign(data, picked_arg, CONST(SELF_OBJ), LONG(rand())));
             state = STATE_OK;
             break;
@@ -63,9 +62,6 @@ int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func)
         case 2: // del random args
         {
             INFO("del random item\n");
-            asdl_arg_seq *args = picked_func->v.FunctionDef.args->args;
-            int picked_arg_id = rand() % args->size;
-            PyObject *picked_arg = args->typed_elements[picked_arg_id]->arg;
             add_stmt = iterable_non_empty_and_type_cond(data, picked_arg, builtin_clz_obj[CLZ_DICT], dict_del(data, picked_arg, LONG(rand())));
             state = STATE_OK;
             break;
@@ -73,9 +69,6 @@ int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func)
         case 3: // clear
         {
             INFO("clear\n");
-            asdl_arg_seq *args = picked_func->v.FunctionDef.args->args;
-            int picked_arg_id = rand() % args->size;
-            PyObject *picked_arg = args->typed_elements[picked_arg_id]->arg;
             add_stmt = iterable_non_empty_and_type_cond(
                 data,
                 picked_arg,
@@ -97,7 +90,6 @@ int mutate_dict_entry(ast_data_t *data, stmt_ty picked_func)
         }
         }
     }
-    picked_func->v.FunctionDef.body = asdl_stmt_seq_copy_add(picked_func->v.FunctionDef.body, data->arena, 1);
-    picked_func->v.FunctionDef.body->typed_elements[picked_func->v.FunctionDef.body->size - 1] = add_stmt;
+    MERGE_STMT
     return STATE_OK;
 }

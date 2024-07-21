@@ -90,6 +90,8 @@ HEADER_TEMPLATE = """
 #ifndef OVERRIDE_FUNC_GEN_H
 # define OVERRIDE_FUNC_GEN_H
 #include "common.h"
+// uthash hash table implementation, copyright inside
+#include "hash.h"
 
 typedef enum
 {
