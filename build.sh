@@ -119,6 +119,7 @@ if [ $FORCE_MODE -eq 1 ]; then
     mkdir -p $SRC_PATH/codgen
     python $SCRIPT_DIR/codgen/deepcopy_ast.py $(readlink -f $CPYTHON_BIN_PATH/include/python3.*/internal/pycore_ast.h) $SRC_PATH/codgen/deepcopy_gen
     python $SCRIPT_DIR/codgen/override_func.py $SRC_PATH/codgen/override_func_gen
+    python $SCRIPT_DIR/codgen/pycore_ast.py $SRC_PATH/codgen/default_gen
 fi
 
 mkdir -p $BUILD_PATH
