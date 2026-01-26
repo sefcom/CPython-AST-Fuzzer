@@ -2,6 +2,8 @@
 A toy project for Python interpreter fuzzing using AST-base mutators, based on LibFuzzer.  
 *Started in SEFCOM.*
 
+> My other work: [CPython Grammar Fuzzer](https://github.com/Nambers/Grammar-Fuzzer)
+
 ## Requirements
 - nix-shell
 - git for pulling source code
